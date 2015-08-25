@@ -1,5 +1,11 @@
 package org.samcrow.data.io;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.samcrow.data4.Colony;
+import org.samcrow.data4.ColonySet;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -8,19 +14,12 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.samcrow.colonynavigator.data.Colony;
 
 /**
  * Reads/writes JSON data to/from files
  * @author Sam Crow
  */
-public class JSONFileParser extends JSONParser implements FileParser<Colony> {
+public class JSONFileParser extends JSONParser implements FileParser {
 
 	protected File file;
 
@@ -33,8 +32,8 @@ public class JSONFileParser extends JSONParser implements FileParser<Colony> {
 	}
 
 	@Override
-	public Set<Colony> parse() {
-		Set<Colony> colonies = new HashSet<Colony>();
+	public ColonySet parse() {
+		ColonySet colonies = new ColonySet();
 
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -59,9 +58,7 @@ public class JSONFileParser extends JSONParser implements FileParser<Colony> {
 				try {
 					JSONObject colonyObject = colonyArray.getJSONObject(i);
 
-					Colony colony = new Colony();
-					colony.fromJSON(colonyObject);
-					colonies.add(colony);
+					colonies.put(fromJSON(colonyObject));
 				}
 				catch(JSONException e) {
 					//If an error with this colony was encountered, move on to the next one
@@ -83,7 +80,7 @@ public class JSONFileParser extends JSONParser implements FileParser<Colony> {
 	}
 
 	@Override
-	public void write(Iterable<Colony> values) {
+	public void write(Iterable<? extends Colony> values) {
 
 		boolean deleteResult = file.delete();
 		if(!deleteResult) {
@@ -101,7 +98,11 @@ public class JSONFileParser extends JSONParser implements FileParser<Colony> {
 		JSONArray colonyArray = new JSONArray();
 
 		for(Colony colony : values) {
-			colonyArray.put(colony.toJSON());
+			try {
+				colonyArray.put(toJSON(colony));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
 
 		try {

@@ -1,11 +1,12 @@
 package org.samcrow.data.io;
 
+import org.samcrow.data4.Colony;
+import org.samcrow.data4.ColonySet;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-
-import org.samcrow.colonynavigator.data.ColonyList;
 
 /**
  * Reads colony numbers, one per line, from the a file and marks
@@ -15,10 +16,10 @@ import org.samcrow.colonynavigator.data.ColonyList;
  */
 public class FocusColonyFinder {
 
-	private final ColonyList colonies;
+	private final ColonySet colonies;
 	private final File focusFile;
 	
-	public FocusColonyFinder(File focusFile, ColonyList colonies) {
+	public FocusColonyFinder(File focusFile, ColonySet colonies) {
 		this.focusFile = focusFile;
 		this.colonies = colonies;
 	}
@@ -40,8 +41,10 @@ public class FocusColonyFinder {
 				
 				try {
 					int colonyId = Integer.valueOf(line);
-					
-					colonies.getById(colonyId).setFocusColony(true);
+					final Colony colony = colonies.get(colonyId);
+					if(colony != null) {
+						colony.setAttribute("census.focus", true);
+					}
 				
 				} catch (NumberFormatException ex) {
 					continue;

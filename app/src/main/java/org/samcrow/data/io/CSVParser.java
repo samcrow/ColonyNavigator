@@ -1,6 +1,6 @@
 package org.samcrow.data.io;
 
-import org.samcrow.colonynavigator.data.Colony;
+import org.samcrow.data4.Colony;
 
 /**
  * Parses/encodes comma-delimited CSV representations of colonies
@@ -23,7 +23,6 @@ public class CSVParser implements Parser<Colony> {
 		//Split the line into parts separated by commas
 		String[] parts = line.split("\\s*,\\s*");
 		try {
-			assert parts.length >= 3;//Require 3 parts: number, X, Y
 
 			int colonyNumber = Integer.valueOf(parts[0]);
 			int x = Integer.valueOf(parts[1]);
@@ -33,7 +32,11 @@ public class CSVParser implements Parser<Colony> {
 			//			//Active if part 3 is A (case insensitive), otherwise false
 			//			boolean active = parts[3].compareToIgnoreCase("A") == 0;
 
-			return new Colony(colonyNumber, x, y, false);
+			final Colony colony = new Colony(colonyNumber);
+			colony.setX(x);
+			colony.setY(y);
+			colony.setAttribute("census.active", false);
+			return colony;
 		} catch(Throwable e) {
 			//If anything went wrong, return null
 			return null;
@@ -49,10 +52,10 @@ public class CSVParser implements Parser<Colony> {
 		int xInt = (int) Math.round(colony.getX());
 		int yInt = (int) Math.round(colony.getY());
 
-		char activeChar = colony.isActive() ? 'A' : ' ';
+		char activeChar = ((boolean) colony.getAttribute("census.active")) ? 'A' : ' ';
 
 		//Format: id,x,y,active,,
-		return String.valueOf(colony.getId()) + separator + xInt + separator + yInt + separator + activeChar + separator + separator;
+		return String.valueOf(colony.getID()) + separator + xInt + separator + yInt + separator + activeChar + separator + separator;
 	}
 
 }

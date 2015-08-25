@@ -16,13 +16,13 @@ public interface Parser<T> {
 	 * @param oneString The string to parse
 	 * @return The parsed colony
 	 */
-	public T parseOne(String oneString);
+	T parseOne(String oneString);
 
 	/**
 	 * Encode one colony into a string representation
 	 * @param value The colony to encode
 	 * @return A string representation of the colony
 	 */
-	public String encodeOne(T value);
+	String encodeOne(T value);
 
 }

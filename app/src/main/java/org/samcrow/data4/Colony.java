@@ -18,6 +18,7 @@ public class Colony {
     private double x;
     /** The colony's Y-coordinate in meters north of the southwest corner */
     private double y;
+
     /** The time this colony was updated */
     private DateTime updateTime;
 
@@ -58,8 +59,7 @@ public class Colony {
      * Sets the update time of the colony
      * @param newTime the update time
      */
-    // Package-private to allow access from ColonyDatabase
-    void setUpdateTime(DateTime newTime) {
+    public void setUpdateTime(DateTime newTime) {
         updateTime = newTime;
     }
 
@@ -93,6 +93,10 @@ public class Colony {
         }
         markUpdated();
         attributes.put(name, value);
+    }
+
+    public boolean hasAttribute(String name) {
+        return attributes.containsKey(name);
     }
 
     public Set<String> attributeNames() {

@@ -1,5 +1,8 @@
 package org.samcrow.data.io;
 
+import org.samcrow.data4.Colony;
+import org.samcrow.data4.ColonySet;
+
 import java.io.File;
 import java.util.Set;
 
@@ -10,9 +13,8 @@ import java.util.Set;
  * have a constructor that takes a {@link File} as an argument
  * to specify the file that should be read from and written to.
  * @author Sam Crow
- * @param <T> The class to parse
  */
-public interface FileParser<T> extends Parser<T> {
+public interface FileParser extends Parser<Colony> {
 
 	/**
 	 * Parse the data source into a set of objects.
@@ -23,12 +25,12 @@ public interface FileParser<T> extends Parser<T> {
 	 * empty {@link Set}.
 	 * @return The colonies
 	 */
-	public Set<T> parse();
+	ColonySet parse();
 
 	/**
 	 * Write all of a set of objects to the data source
 	 * @param values The colonies to write
 	 */
-	public void write(Iterable<T> values);
+	void write(Iterable<? extends Colony> values);
 
 }

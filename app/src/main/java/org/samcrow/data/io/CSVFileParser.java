@@ -1,6 +1,7 @@
 package org.samcrow.data.io;
 
-import org.samcrow.colonynavigator.data.Colony;
+import org.samcrow.data4.Colony;
+import org.samcrow.data4.ColonySet;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,14 +10,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Parses CSV files
  * @author Sam Crow
  */
-public class CSVFileParser extends CSVParser implements FileParser<Colony> {
+public class CSVFileParser extends CSVParser implements FileParser {
 
 	protected File file;
 
@@ -29,9 +28,9 @@ public class CSVFileParser extends CSVParser implements FileParser<Colony> {
 	}
 
 	@Override
-	public Set<Colony> parse() {
+	public ColonySet parse() {
 
-		Set<Colony> colonies = new HashSet<Colony>();
+		ColonySet colonies = new ColonySet();
 
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
@@ -47,7 +46,7 @@ public class CSVFileParser extends CSVParser implements FileParser<Colony> {
 				//colony might be null if the line couldn't be parsed.
 				//Add it only if it was parsed successfully.
 				if(colony != null) {
-					colonies.add(colony);
+					colonies.put(colony);
 				}
 
 			}
@@ -63,7 +62,7 @@ public class CSVFileParser extends CSVParser implements FileParser<Colony> {
 	}
 
 	@Override
-	public void write(Iterable<Colony> values) {
+	public void write(Iterable<? extends Colony> values) {
 		//Delete the file, if it exists, so that it can be rewritten from the beginning
 		file.delete();
 		try {
