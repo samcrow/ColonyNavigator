@@ -1,6 +1,24 @@
 package org.samcrow.colonynavigator;
 
-import java.io.File;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.text.InputType;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.FrameLayout;
+import android.widget.SearchView;
+
+import com.applantation.android.svg.SVG;
+import com.applantation.android.svg.SVGParseException;
+import com.applantation.android.svg.SVGParser;
 
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.MapPosition;
@@ -25,34 +43,9 @@ import org.samcrow.colonynavigator.map.ColonyMarker;
 import org.samcrow.colonynavigator.map.NotifyingMyLocationOverlay;
 import org.samcrow.colonynavigator.map.RouteLineLayer;
 import org.samcrow.data.provider.ColonyProvider;
-import org.samcrow.data.provider.HardCodedColonyProvider;
+import org.samcrow.data.provider.MemoryCardDataProvider;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Environment;
-import android.text.InputType;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.FrameLayout;
-import android.widget.SearchView;
-
-import com.applantation.android.svg.SVG;
-import com.applantation.android.svg.SVGParseException;
-import com.applantation.android.svg.SVGParser;
-import com.ftdi.j2xx.D2xxManager;
-import com.ftdi.j2xx.FT_Device;
-import com.rapplogic.xbee.xbee.AndroidFTDIConnection;
-import com.rapplogic.xbee.xbee.api.InputStreamThread;
-import com.rapplogic.xbee.xbee.api.XBee;
-import com.rapplogic.xbee.xbee.api.XBeeConfiguration;
-import com.rapplogic.xbee.xbee.api.XBeeException;
+import java.io.File;
 
 /**
  * The main activity
@@ -103,7 +96,7 @@ public class MainActivity extends Activity implements
 			setUpMap();
 
 			// Add colonies
-			provider = HardCodedColonyProvider.instance;
+			provider = new MemoryCardDataProvider(getSDCardPath());
 
 			colonies = provider.getColonies();
 			for (Colony colony : colonies) {
@@ -362,46 +355,46 @@ public class MainActivity extends Activity implements
 			}
 		});
 
-		final MenuItem xBeeTestItem = menu.findItem(R.id.test_item);
-		xBeeTestItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-			@Override
-			public boolean onMenuItemClick(MenuItem item) {
-
-				try {
-					final D2xxManager manager = D2xxManager.getInstance(MainActivity.this);
-					final int deviceCount = manager.createDeviceInfoList(MainActivity.this);
-					if(deviceCount > 0) {
-						final FT_Device device = manager.openByIndex(MainActivity.this, 0);
-						device.setBaudRate(9600);
-
-						final XBee xBee = new XBee();
-						final AndroidFTDIConnection connection = new AndroidFTDIConnection(device);
-						final InputStreamThread inputThread = new InputStreamThread(connection, new XBeeConfiguration());
-
-						xBee.open(connection);
-
-						xBee.close();
-						device.close();
-					}
-					else {
-						new AlertDialog.Builder(MainActivity.this)
-								.setTitle("No devices")
-								.setMessage("No FTDI devices are attached")
-								.setIcon(android.R.drawable.ic_dialog_alert)
-								.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
-					}
-
-				} catch (Throwable e) {
-					new AlertDialog.Builder(MainActivity.this)
-							.setTitle(e.getClass().getSimpleName())
-							.setMessage(e.getMessage())
-							.setIcon(android.R.drawable.ic_dialog_alert)
-							.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
-				}
-
-				return true;
-			}
-		});
+//		final MenuItem xBeeTestItem = menu.findItem(R.id.test_item);
+//		xBeeTestItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+//			@Override
+//			public boolean onMenuItemClick(MenuItem item) {
+//
+//				try {
+//					final D2xxManager manager = D2xxManager.getInstance(MainActivity.this);
+//					final int deviceCount = manager.createDeviceInfoList(MainActivity.this);
+//					if(deviceCount > 0) {
+//						final FT_Device device = manager.openByIndex(MainActivity.this, 0);
+//						device.setBaudRate(9600);
+//
+//						final XBee xBee = new XBee();
+//						final AndroidFTDIConnection connection = new AndroidFTDIConnection(device);
+//						final InputStreamThread inputThread = new InputStreamThread(connection, new XBeeConfiguration()
+//
+//						xBee.open(connection);
+//
+//						xBee.close();
+//						device.close();
+//					}
+//					else {
+//						new AlertDialog.Builder(MainActivity.this)
+//								.setTitle("No devices")
+//								.setMessage("No FTDI devices are attached")
+//								.setIcon(android.R.drawable.ic_dialog_alert)
+//								.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
+//					}
+//
+//				} catch (Throwable e) {
+//					new AlertDialog.Builder(MainActivity.this)
+//							.setTitle(e.getClass().getSimpleName())
+//							.setMessage(e.getMessage())
+//							.setIcon(android.R.drawable.ic_dialog_alert)
+//							.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
+//				}
+//
+//				return true;
+//			}
+//		});
 		
 		return true;
 	}

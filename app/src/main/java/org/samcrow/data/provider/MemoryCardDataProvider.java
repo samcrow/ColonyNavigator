@@ -1,8 +1,5 @@
 package org.samcrow.data.provider;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.samcrow.colonynavigator.data.Colony;
 import org.samcrow.colonynavigator.data.ColonyList;
 import org.samcrow.data.io.CSVFileParser;
@@ -10,9 +7,12 @@ import org.samcrow.data.io.FileParser;
 import org.samcrow.data.io.FocusColonyFinder;
 import org.samcrow.data.io.JSONFileParser;
 
+import java.io.File;
+import java.io.IOException;
+
 /**
  * Provides colonies from data stored on the memory card.
- * This class first looks for a CSV file named colonies.csv in the directory specified by {@link #kDir}.
+ * This class first looks for a CSV file named colonies.csv in the directory specified by {@link #cardPath}.
  * It parses that data.
  * Then it looks for a JSON file named colonies.json in the same directory and parses that data.
  * In the event of any conflict between the two files, the version in colonies.json takes precedence.
@@ -25,31 +25,25 @@ public class MemoryCardDataProvider implements ColonyProvider {
 
 	private ColonyList colonies = new ColonyList();
 
-	/**
-	 * The absolute path to the folder where data should be read and written.
-	 * This must begin and end with a slash.
-	 * The folders don't need to exist on the file system. This implementation
-	 * will try to create them if necessary.
-	 */
-	private static final String kDir = "/mnt/extSdCard/";
+	private final File cardPath;
 
 	/**
 	 * The name, including the file extension, of the CSV file to use
 	 */
-	private static final String kCsvFileName = "colonies.csv";
+	private static final String kCsvFileName = "/colonies.csv";
 
 	/**
 	 * The name, including the file extension, of the JSON file to use
 	 */
-	private static final String kJsonFileName = "colonies.json";
+	private static final String kJsonFileName = "/colonies.json";
 
-	public MemoryCardDataProvider() {
-		File dir = new File(kDir);
+	public MemoryCardDataProvider(File cardPath) {
+		this.cardPath = cardPath;
 		//Create the directory if it doesn't already exist
-		dir.mkdirs();
+		cardPath.mkdirs();
 
-		File csvFile = new File(kDir+kCsvFileName);
-		File jsonFile = new File(kDir+kJsonFileName);
+		File csvFile = new File(cardPath.getAbsolutePath() + kCsvFileName);
+		File jsonFile = new File(cardPath.getAbsolutePath() + kJsonFileName);
 
 		//Verify that this application has permission to write each of the files
 		if(csvFile.exists()) assert csvFile.canWrite();
@@ -101,7 +95,7 @@ public class MemoryCardDataProvider implements ColonyProvider {
 		
 
 		//Look for focus_colonies.txt
-		File focusFile = new File(kDir+"focus_colonies.txt");
+		File focusFile = new File(cardPath+"focus_colonies.txt");
 		if(focusFile.exists() && focusFile.canRead()) {
 			try {
 				new FocusColonyFinder(focusFile, colonies).updateColonies();
@@ -201,7 +195,7 @@ public class MemoryCardDataProvider implements ColonyProvider {
 
 		@Override
 		public void run() {
-			File file = new File(kDir+kJsonFileName);
+			File file = new File(cardPath +kJsonFileName);
 
 			FileParser<Colony> parser = new JSONFileParser(file);
 			parser.write(colonies);
