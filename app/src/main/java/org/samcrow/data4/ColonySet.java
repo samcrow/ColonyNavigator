@@ -1,5 +1,6 @@
 package org.samcrow.data4;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
@@ -14,7 +15,22 @@ public class ColonySet implements Iterable<Colony> {
      * Creates a new empty set of colonies
      */
     public ColonySet() {
-        map = new LinkedHashMap<Integer, Colony>();
+        map = new LinkedHashMap<>();
+    }
+
+    /**
+     * Creates a new set of colonies with colonies from the provided collection
+     * @param collection a collection containing the colonies to copy
+     * @throws NullPointerException if any colony in the collection is null
+     */
+    public ColonySet(Collection<? extends Colony> collection) {
+        this();
+        for(Colony colony : collection) {
+            if(colony == null) {
+                throw new NullPointerException("No colony may be null");
+            }
+            map.put(colony.getID(), colony);
+        }
     }
 
     /**
@@ -48,5 +64,32 @@ public class ColonySet implements Iterable<Colony> {
             throw new NullPointerException("Colony must not be null");
         }
         return map.put(colony.getID(), colony);
+    }
+
+    /**
+     * Adds all colonies from a collection to this set
+     * @param collection the collection of colonies to add
+     * @throws NullPointerException if any colony in the collection is null
+     */
+    public void putAll(Collection<? extends Colony> collection) {
+        for(Colony colony : collection) {
+            put(colony);
+        }
+    }
+    /**
+     * Adds all colonies from another set to this set
+     * @param other the collection of colonies to add
+     */
+    public void putAll(ColonySet other) {
+        for(Colony colony : other) {
+            put(colony);
+        }
+    }
+
+    /**
+     * Removes all colonies from this set
+     */
+    public void clear() {
+        map.clear();
     }
 }

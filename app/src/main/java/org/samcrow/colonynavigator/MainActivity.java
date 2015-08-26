@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
@@ -47,7 +48,7 @@ import org.samcrow.colonynavigator.map.ColonyMarker;
 import org.samcrow.colonynavigator.map.NotifyingMyLocationOverlay;
 import org.samcrow.colonynavigator.map.RouteLineLayer;
 import org.samcrow.data.provider.ColonyProvider;
-import org.samcrow.data.provider.HardCodedColonyProvider;
+import org.samcrow.data.provider.MemoryCardDataProvider;
 import org.samcrow.data4.Colony;
 import org.samcrow.data4.ColonySet;
 
@@ -58,6 +59,8 @@ import java.io.File;
  */
 public class MainActivity extends Activity implements
 		OnSharedPreferenceChangeListener, ColonyEditDialogFragment.ColonyChangeListener {
+
+	private static final String TAG = MainActivity.class.getSimpleName();
 
 	/**
 	 * The initial position of the map
@@ -102,7 +105,7 @@ public class MainActivity extends Activity implements
 			setUpMap();
 
 			// Add colonies
-			provider = HardCodedColonyProvider.instance;
+			provider = new MemoryCardDataProvider(getSDCardPath());
 
 			final CoordinateTransformer transformer = CoordinateTransformer.getInstance();
 			colonies = provider.getColonies();
@@ -370,22 +373,38 @@ public class MainActivity extends Activity implements
 			public boolean onMenuItemClick(MenuItem item) {
 
 				try {
+
+					Log.d(TAG, "=================== Opening device ==================");
 					final D2xxManager manager = D2xxManager.getInstance(MainActivity.this);
 					final int deviceCount = manager.createDeviceInfoList(MainActivity.this);
-					if(deviceCount > 0) {
+					if (deviceCount > 0) {
 						final FT_Device device = manager.openByIndex(MainActivity.this, 0);
+						if(device == null) {
+							throw new NullPointerException("Device is null");
+						}
 						device.setBaudRate(9600);
 
 						final XBee xBee = new XBee();
 						final AndroidFTDIConnection connection = new AndroidFTDIConnection(device);
 						final InputStreamThread inputThread = new InputStreamThread(connection, new XBeeConfiguration());
+						Log.d(TAG, "=================== Done opening device ==================");
 
-						xBee.open(connection);
-
-						xBee.close();
-						device.close();
-					}
-					else {
+						try {
+							Thread.sleep(500);
+							Log.d(TAG, "=================== Opening connection ==================");
+							xBee.open(connection);
+							Log.d(TAG, "=================== Done opening connection ==================");
+							Thread.sleep(500);
+						}
+						finally {
+							Log.d(TAG, "=================== Closing device ==================");
+							inputThread.interrupt();
+							xBee.close();
+							connection.close();
+							device.close();
+							Log.d(TAG, "=================== Done closing device ==================");
+						}
+					} else {
 						new AlertDialog.Builder(MainActivity.this)
 								.setTitle("No devices")
 								.setMessage("No FTDI devices are attached")
@@ -394,6 +413,7 @@ public class MainActivity extends Activity implements
 					}
 
 				} catch (Throwable e) {
+					e.printStackTrace();
 					new AlertDialog.Builder(MainActivity.this)
 							.setTitle(e.getClass().getSimpleName())
 							.setMessage(e.getMessage())
@@ -404,7 +424,7 @@ public class MainActivity extends Activity implements
 				return true;
 			}
 		});
-		
+
 		return true;
 	}
 

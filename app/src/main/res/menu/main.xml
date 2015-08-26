@@ -26,7 +26,7 @@
         android:icon="@drawable/ic_action_settings" />-->
     <item android:id="@+id/test_item"
           android:title="XBee"
-          android:showAsAction="ifRoom" />
+          android:showAsAction="never" />
     
     <item android:id="@+id/check_for_updates_item" 
         android:title="@string/check_for_updates"/>
