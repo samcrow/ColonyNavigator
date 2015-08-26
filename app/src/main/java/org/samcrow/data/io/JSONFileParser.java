@@ -1,5 +1,7 @@
 package org.samcrow.data.io;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,8 +14,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.text.DateFormat;
-import java.util.Date;
 
 /**
  * Reads/writes JSON data to/from files
@@ -108,7 +108,7 @@ public class JSONFileParser extends JSONParser implements FileParser {
 		try {
 			jsonRoot.put("colonies", colonyArray);
 			//Add a comment with some information for humans
-			jsonRoot.put("comment", "Serialized into JSON by "+toString()+" at "+DateFormat.getDateTimeInstance().format(new Date())+".");
+			jsonRoot.put("comment", "Serialized into JSON by "+toString()+" at "+ DateTime.now().toString(ISODateTimeFormat.basicDateTime()) +".");
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

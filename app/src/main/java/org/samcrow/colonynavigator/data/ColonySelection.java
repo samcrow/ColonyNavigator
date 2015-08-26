@@ -1,5 +1,6 @@
 package org.samcrow.colonynavigator.data;
 
+import org.samcrow.data4.Colony;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,10 +21,10 @@ public class ColonySelection {
 		 * When this method is called, the selection will already have been changed and {@link #getSelectedColony()}
 		 * will return newColony.
 		 * 
-		 * @param oldColony The colony that was previously selected. It has already been set to not selected.
-		 * @param newColony The colony that has been newly selected. It has already been set to selected.
+		 * @param oldColony The colony that was previously selected
+		 * @param newColony The colony that has been newly selected
 		 */
-		public void selectedColonyChanged(Colony oldColony, Colony newColony);
+		void selectedColonyChanged(Colony oldColony, Colony newColony);
 	}
 	
 	private Colony selectedColony;
@@ -45,13 +46,6 @@ public class ColonySelection {
 	public void setSelectedColony(Colony newColony) {
 		
 		final Colony oldColony = selectedColony;
-		if(oldColony != null) {
-			oldColony.setSelected(false);
-		}
-		if(newColony != null) {
-			newColony.setSelected(true);
-		}
-		
 		selectedColony = newColony;
 		
 		notifyListeners(oldColony, newColony);

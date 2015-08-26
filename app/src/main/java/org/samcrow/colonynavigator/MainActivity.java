@@ -1,32 +1,5 @@
 package org.samcrow.colonynavigator;
 
-import java.io.File;
-
-import org.mapsforge.core.model.LatLong;
-import org.mapsforge.core.model.MapPosition;
-import org.mapsforge.map.android.AndroidPreferences;
-import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
-import org.mapsforge.map.android.util.AndroidUtil;
-import org.mapsforge.map.android.view.MapView;
-import org.mapsforge.map.layer.LayerManager;
-import org.mapsforge.map.layer.cache.TileCache;
-import org.mapsforge.map.layer.renderer.TileRendererLayer;
-import org.mapsforge.map.model.MapViewPosition;
-import org.mapsforge.map.model.Model;
-import org.mapsforge.map.model.common.PreferencesFacade;
-import org.mapsforge.map.reader.MapFile;
-import org.mapsforge.map.rendertheme.InternalRenderTheme;
-import org.mapsforge.map.rendertheme.XmlRenderTheme;
-import org.samcrow.colonynavigator.data.Colony;
-import org.samcrow.colonynavigator.data.ColonyList;
-import org.samcrow.colonynavigator.data.ColonyList.NoSuchColonyException;
-import org.samcrow.colonynavigator.data.ColonySelection;
-import org.samcrow.colonynavigator.map.ColonyMarker;
-import org.samcrow.colonynavigator.map.NotifyingMyLocationOverlay;
-import org.samcrow.colonynavigator.map.RouteLineLayer;
-import org.samcrow.data.provider.ColonyProvider;
-import org.samcrow.data.provider.HardCodedColonyProvider;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -52,7 +25,33 @@ import com.rapplogic.xbee.xbee.AndroidFTDIConnection;
 import com.rapplogic.xbee.xbee.api.InputStreamThread;
 import com.rapplogic.xbee.xbee.api.XBee;
 import com.rapplogic.xbee.xbee.api.XBeeConfiguration;
-import com.rapplogic.xbee.xbee.api.XBeeException;
+
+import org.mapsforge.core.model.LatLong;
+import org.mapsforge.core.model.MapPosition;
+import org.mapsforge.map.android.AndroidPreferences;
+import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
+import org.mapsforge.map.android.util.AndroidUtil;
+import org.mapsforge.map.android.view.MapView;
+import org.mapsforge.map.layer.LayerManager;
+import org.mapsforge.map.layer.cache.TileCache;
+import org.mapsforge.map.layer.renderer.TileRendererLayer;
+import org.mapsforge.map.model.MapViewPosition;
+import org.mapsforge.map.model.Model;
+import org.mapsforge.map.model.common.PreferencesFacade;
+import org.mapsforge.map.reader.MapFile;
+import org.mapsforge.map.rendertheme.InternalRenderTheme;
+import org.mapsforge.map.rendertheme.XmlRenderTheme;
+import org.samcrow.colonynavigator.data.ColonyList.NoSuchColonyException;
+import org.samcrow.colonynavigator.data.ColonySelection;
+import org.samcrow.colonynavigator.map.ColonyMarker;
+import org.samcrow.colonynavigator.map.NotifyingMyLocationOverlay;
+import org.samcrow.colonynavigator.map.RouteLineLayer;
+import org.samcrow.data.provider.ColonyProvider;
+import org.samcrow.data.provider.HardCodedColonyProvider;
+import org.samcrow.data4.Colony;
+import org.samcrow.data4.ColonySet;
+
+import java.io.File;
 
 /**
  * The main activity
@@ -80,7 +79,7 @@ public class MainActivity extends Activity implements
 
 	private ColonyProvider provider;
 
-	private ColonyList colonies;
+	private ColonySet colonies;
 	/**
 	 * The current selected colony
 	 */
@@ -105,9 +104,10 @@ public class MainActivity extends Activity implements
 			// Add colonies
 			provider = HardCodedColonyProvider.instance;
 
+			final CoordinateTransformer transformer = CoordinateTransformer.getInstance();
 			colonies = provider.getColonies();
 			for (Colony colony : colonies) {
-				layerManager.getLayers().add(new ColonyMarker(colony));
+				layerManager.getLayers().add(new ColonyMarker(colony, transformer));
 			}
 
 			// Add layers above colonies
@@ -170,7 +170,7 @@ public class MainActivity extends Activity implements
 		selection.addChangeListener(new ColonySelection.Listener() {
 			@Override
 			public void selectedColonyChanged(Colony oldColony, Colony newColony) {
-				route.setDestination(newColony.getMarker());
+				route.setDestination(CoordinateTransformer.getInstance().toGps((float) newColony.getX(), (float) newColony.getY()));
 			}
 		});
 		layerManager.getLayers().add(route);
@@ -244,12 +244,12 @@ public class MainActivity extends Activity implements
 	public void onColonyChanged(Bundle colonyData) {
 		// Find the colony that was changed and update its data
 		final int colonyId = colonyData.getInt("colony_id");
-		Colony colony = colonies.getById(colonyId);
+		Colony colony = colonies.get(colonyId);
 		if(colonyData.containsKey("colony_visited")) {
-			colony.setVisited(colonyData.getBoolean("colony_visited"));
+			colony.setAttribute("census.visited", colonyData.getBoolean("colony_visited"));
 		}
 		if(colonyData.containsKey("colony_active")) {
-			colony.setActive(colonyData.getBoolean("colony_active"));
+			colony.setAttribute("census.active", colonyData.getBoolean("colony_active"));
 		}
 		// Save the colony
 		provider.updateColony(colony);
@@ -281,7 +281,7 @@ public class MainActivity extends Activity implements
 				try {
 					int colonyId = Integer.valueOf(query);
 
-					Colony newSelectedColony = colonies.getById(colonyId);
+					Colony newSelectedColony = colonies.get(colonyId);
 
 					// Deselect the current selected colony and select the new one
 					selection.setSelectedColony(newSelectedColony);
@@ -290,7 +290,9 @@ public class MainActivity extends Activity implements
 					searchView.clearFocus();
 
 					// Center the map view on the colony
-					mapView.getModel().mapViewPosition.animateTo(newSelectedColony.getLatLon());
+					mapView.getModel().mapViewPosition.animateTo(
+							CoordinateTransformer.getInstance().toGps((float)newSelectedColony.getX(),
+									(float) newSelectedColony.getY()));
 					
 					return true;
 				} catch (NumberFormatException e) {

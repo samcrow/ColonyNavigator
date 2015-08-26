@@ -1,7 +1,7 @@
 package org.samcrow.data.provider;
 
-import org.samcrow.colonynavigator.data.Colony;
-import org.samcrow.colonynavigator.data.ColonyList;
+import org.samcrow.data4.Colony;
+import org.samcrow.data4.ColonySet;
 
 /**
  * An interface for a class that can get colonies and update their information.
@@ -14,7 +14,7 @@ public interface ColonyProvider {
 	 * This method should not block.
 	 * @return The colonies, or null if the colonies are not currently available
 	 */
-	public ColonyList getColonies();
+	ColonySet getColonies();
 
 	/**
 	 * Take all the colonies (the same reference as returned by {@link #getColonies()})
@@ -23,7 +23,7 @@ public interface ColonyProvider {
 	 * @throws UnsupportedOperationException if this provider does not support
 	 * persistent storage
 	 */
-	public void updateColonies() throws UnsupportedOperationException;
+	void updateColonies() throws UnsupportedOperationException;
 
 	/**
 	 * Write the information on a selected colony to the persistence mechanism.
@@ -34,5 +34,5 @@ public interface ColonyProvider {
 	 * @throws UnsupportedOperationException if this provider does not support
 	 * persistent storage
 	 */
-	public void updateColony(Colony colony) throws UnsupportedOperationException;
+	void updateColony(Colony colony) throws UnsupportedOperationException;
 }

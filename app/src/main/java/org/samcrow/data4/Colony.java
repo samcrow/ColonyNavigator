@@ -11,6 +11,18 @@ import java.util.Set;
  * Represents a colony
  */
 public class Colony {
+
+
+    /**
+     * A listener that can be notified when a colony's drawable changes
+     *
+     * @author samcrow
+     *
+     */
+    public interface ColonyChangeListener {
+        void onColonyChanged();
+    }
+
     /** The colony's identifier */
     private final int id;
 
@@ -27,10 +39,20 @@ public class Colony {
      */
     private Map<String, Object> attributes;
 
+    /** The change listener */
+    private transient ColonyChangeListener listener = null;
+
     public Colony(int id) {
         this.id = id;
         updateTime = DateTime.now();
         attributes = new HashMap<>();
+    }
+
+    public Colony(int id, double x, double y, boolean active) {
+        this(id);
+        this.x = x;
+        this.y = y;
+        this.setAttribute("census.active", active);
     }
 
     public int getID() {
@@ -84,6 +106,21 @@ public class Colony {
         return attributes.get(attributeName);
     }
 
+    public <T> T getAttribute(String attributeName, T defaultValue) {
+        final Object mapValue = attributes.get(attributeName);
+        if(mapValue != null) {
+            try {
+                return (T) mapValue;
+            }
+            catch (ClassCastException e) {
+                return defaultValue;
+            }
+        }
+        else {
+            return defaultValue;
+        }
+    }
+
     public void setAttribute(String name, Object value) {
         if(name == null) {
             throw new NullPointerException("name must not be null");
@@ -109,5 +146,19 @@ public class Colony {
     }
     public Map<String, Object> getAttributes() {
         return new HashMap<>(attributes);
+    }
+
+
+    /**
+     * Notifies the listener that something has changed
+     */
+    private void notifyChanged() {
+        if (listener != null) {
+            listener.onColonyChanged();
+        }
+    }
+    public void setOnChange(
+            ColonyChangeListener changelistener) {
+        listener = changelistener;
     }
 }

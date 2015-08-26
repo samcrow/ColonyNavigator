@@ -1,7 +1,5 @@
 package org.samcrow.colonynavigator.map;
 
-import org.samcrow.colonynavigator.data.Colony;
-
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
@@ -12,6 +10,8 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+
+import org.samcrow.data4.Colony;
 
 public class ColonyDrawable extends Drawable {
 
@@ -70,13 +70,15 @@ public class ColonyDrawable extends Drawable {
 	private FontMetrics metrics = new FontMetrics();
 	
 	private final Colony colony;
-	
+
+	private boolean colonySelected;
+
 	private final String colonyIdString;
 	private final int idStringWidth;
 	
 	public ColonyDrawable(Colony colony) {
 		this.colony = colony;
-		colonyIdString = String.valueOf(colony.getId());
+		colonyIdString = String.valueOf(colony.getID());
 		idStringWidth = (int) Math.ceil(paint.measureText(colonyIdString));
 		
 		paint.setAntiAlias(true);
@@ -134,11 +136,11 @@ public class ColonyDrawable extends Drawable {
 		
 		//Big background circle
 		int backgroundColor;
-		if(colony.isVisited()) {
+		if(colony.getAttribute("census.visited", false)) {
 			backgroundColor = BG_VISITED_COLOR;
 		}
 		else {
-			if(colony.isFocusColony()) {
+			if(colony.getAttribute("census.focus", false)) {
 				backgroundColor = BG_FOCUS_COLOR;
 			}
 			else {
@@ -149,8 +151,8 @@ public class ColonyDrawable extends Drawable {
 		paint.setColor(backgroundColor);
 		paint.setStyle(Style.FILL);
 		
-		if(colony.isVisited()) {
-			if(colony.isFocusColony()) {
+		if(colony.getAttribute("census.visited", false)) {
+			if(colony.getAttribute("census.focus", false)) {
 				// Visited, focus colony
 				// Draw a two-part circle
 				drawTwoColorCircle(canvas, centerX, centerY, BG_VISITED_COLOR, BG_FOCUS_COLOR);
@@ -161,7 +163,7 @@ public class ColonyDrawable extends Drawable {
 			}
 		}
 		else {
-			if(colony.isFocusColony()) {
+			if(colony.getAttribute("census.focus", false)) {
 				// Not visited, focus colony
 				drawBackgroundCircle(canvas, centerX, centerY, BG_FOCUS_COLOR);
 				
@@ -174,7 +176,7 @@ public class ColonyDrawable extends Drawable {
 		
 		
 		// Draw the circle around the colony if it is selected
-		if(colony.isSelected()) {
+		if(colonySelected) {
 			paint.setStyle(Style.STROKE);
 			paint.setColor(SELECTED_CIRCLE_COLOR);
 			paint.setStrokeWidth(SELECTED_CIRCLE_LINE_WIDTH);
@@ -190,7 +192,7 @@ public class ColonyDrawable extends Drawable {
 		
 		//Draw colony number
 		paint.setColor(LABEL_COLOR);
-		canvas.drawText(String.valueOf(colony.getId()), centerX + TEXT_X_OFFSET, centerY + metrics.descent, paint);
+		canvas.drawText(String.valueOf(colony.getID()), centerX + TEXT_X_OFFSET, centerY + metrics.descent, paint);
 	}
 	
 	/**
@@ -214,7 +216,14 @@ public class ColonyDrawable extends Drawable {
 		paint.setColor(rightColor);
 		canvas.drawArc(rect, -90, 180, true, paint);
 	}
-	
+
+	public boolean isColonySelected() {
+		return colonySelected;
+	}
+
+	public void setColonySelected(boolean colonySelected) {
+		this.colonySelected = colonySelected;
+	}
 
 	@Override
 	public int getOpacity() {

@@ -1,7 +1,5 @@
 package org.samcrow.colonynavigator;
 
-import org.samcrow.colonynavigator.data.Colony;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -9,6 +7,8 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.CheckBox;
+
+import org.samcrow.data4.Colony;
 
 /**
  * A fragment that creates a dialog that can be used to edit a colony.
@@ -21,7 +21,7 @@ import android.widget.CheckBox;
  */
 public class ColonyEditDialogFragment extends DialogFragment {
 	
-	public static interface ColonyChangeListener {
+	public interface ColonyChangeListener {
 		/**
 		 * Called when a colony has been edited and new information is available.
 		 * @param colonyData A bundle containing changed information.
@@ -29,16 +29,16 @@ public class ColonyEditDialogFragment extends DialogFragment {
 		 * It may contain the colony's visited state as "colony_visited" and/or
 		 * its active state as "colony_active"
 		 */
-		public void onColonyChanged(Bundle colonyData);
+		void onColonyChanged(Bundle colonyData);
 	}
 
 	public static ColonyEditDialogFragment newInstance(Colony colony) {
 		final ColonyEditDialogFragment fragment = new ColonyEditDialogFragment();
 		final Bundle args = new Bundle();
 		
-		args.putInt("colony_id", colony.getId());
-		args.putBoolean("colony_visited", colony.isVisited());
-		args.putBoolean("colony_active", colony.isActive());
+		args.putInt("colony_id", colony.getID());
+		args.putBoolean("colony_visited", colony.getAttribute("census.visited", false));
+		args.putBoolean("colony_active", colony.getAttribute("census.active", false));
 		
 		fragment.setArguments(args);
 		
@@ -81,7 +81,6 @@ public class ColonyEditDialogFragment extends DialogFragment {
 					newData.putBoolean("colony_active", activeBox.isChecked());
 					
 					((ColonyChangeListener) getActivity()).onColonyChanged(newData);
-				
 				}
 				ColonyEditDialogFragment.this.getDialog().dismiss();
 			}

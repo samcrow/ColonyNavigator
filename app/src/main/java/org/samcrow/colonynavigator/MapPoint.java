@@ -1,6 +1,6 @@
 package org.samcrow.colonynavigator;
 
-import org.samcrow.colonynavigator.data.Colony;
+import org.samcrow.data4.Colony;
 
 
 

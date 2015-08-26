@@ -1,10 +1,10 @@
 package org.samcrow.colonynavigator;
 
-import org.mapsforge.core.model.LatLong;
-import org.samcrow.colonynavigator.data.Colony;
-
 import android.graphics.Matrix;
 import android.graphics.PointF;
+
+import org.mapsforge.core.model.LatLong;
+import org.samcrow.data4.Colony;
 
 /**
  * Transforms coordinates from GPS latitude/longitude into local colony
@@ -80,7 +80,6 @@ public class CoordinateTransformer {
 	 * @return A point with the transformed coordinates
 	 */
 	public PointF toLocal(double longitude, double latitude) {
-		// Explicitly extract the primitive values from the objects
 		double x = longitude;
 		double y = latitude;
 		float[] points = new float[] { (float) x, (float) y };
