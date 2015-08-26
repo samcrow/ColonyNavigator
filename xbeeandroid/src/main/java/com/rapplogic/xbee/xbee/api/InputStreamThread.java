@@ -19,6 +19,10 @@
 
 package com.rapplogic.xbee.xbee.api;
 
+import android.util.Log;
+
+import com.rapplogic.xbee.xbee.XBeeConnection;
+
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,8 +30,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-
-import com.rapplogic.xbee.xbee.XBeeConnection;
 
 /**
  * Reads data from the input stream and hands off to PacketParser for packet parsing.
@@ -37,6 +39,8 @@ import com.rapplogic.xbee.xbee.XBeeConnection;
  *
  */
 public class InputStreamThread implements Runnable {
+
+	private static final String TAG = InputStreamThread.class.getSimpleName();
 	
 	private Thread thread;
 	private ExecutorService listenerPool;
@@ -129,6 +133,7 @@ public class InputStreamThread implements Runnable {
 				try {
 					if (connection.getInputStream().available() > 0) {
 						val = connection.getInputStream().read();
+						Log.d(TAG, "Bytes available. Read "+val);
 						
 						if (val == XBeePacket.SpecialByte.START_BYTE.getValue()) {
 							packetStream = new PacketParser(connection.getInputStream());
@@ -138,19 +143,26 @@ public class InputStreamThread implements Runnable {
 							this.addResponse(response);
 						}
 					} else {
-						
+						Log.d(TAG, "No bytes available");
 						// we will wait here for RXTX to notify us of new data
 						synchronized (this.connection) {
 							// There's a chance that we got notified after the first in.available check
 							if (connection.getInputStream().available() > 0) {
 								continue;
 							}
-							
+
+							Log.d(TAG, "Waiting on connection " + System.identityHashCode(this.connection));
 							// wait until new data arrives
-							this.connection.wait();
-						}	
+							try {
+								this.connection.wait();
+							} catch (InterruptedException e) {
+								Log.e(TAG, "Interrupted!");
+							}
+							Log.d(TAG, "Done waiting on connection");
+						}
 					}				
 				} catch (Exception e) {
+					Log.w(TAG, "General exception", e);
 					if (e instanceof InterruptedException) throw ((InterruptedException)e);
 					
 					if (e instanceof IOException) {
@@ -163,6 +175,7 @@ public class InputStreamThread implements Runnable {
 			// We've been told to stop -- the user called the close() method
 		} catch (Throwable t) {
 		} finally {
+			Log.w(TAG, "Thread exiting");
 			try {
 				if (connection != null) {
 					connection.close();

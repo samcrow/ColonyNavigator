@@ -1,8 +1,7 @@
 package com.rapplogic.xbee.xbee;
 
-import com.ftdi.j2xx.D2xxManager;
-import com.ftdi.j2xx.D2xxManager.D2xxException;
-import com.ftdi.j2xx.D2xxManager.FtDeviceInfoListNode;
+import android.util.Log;
+
 import com.ftdi.j2xx.FT_Device;
 import com.rapplogic.xbee.xbee.ftdi.FTDIInputStream;
 import com.rapplogic.xbee.xbee.ftdi.FTDIOutputStream;
@@ -15,6 +14,8 @@ import java.io.OutputStream;
  * A connection to an FTDI USB device for Android
  */
 public class AndroidFTDIConnection implements XBeeConnection {
+
+    private static final String TAG = AndroidFTDIConnection.class.getSimpleName();
 
     private final FT_Device device;
 
@@ -49,39 +50,43 @@ public class AndroidFTDIConnection implements XBeeConnection {
         device.close();
         notifier.interrupt();
         try {
+            Log.d(TAG, "Joining notifier thread");
             notifier.join();
+            Log.d(TAG, "Done joining");
         } catch (InterruptedException e) {
             throw new IOException("Interrupted while waiting for notifier thread to stop", e);
         }
     }
 
     private class NotificationThread extends Thread {
+        private final String TAG = NotificationThread.class.getSimpleName();
         /**
          * Number of milliseconds to wait in between checks
          */
         private final int DELAY_MS = 100;
 
+        public NotificationThread() {
+            super("NotificationThread");
+        }
+
         @Override
         public void run() {
-            try {
-                while (!isInterrupted()) {
-                    sleep(DELAY_MS);
-                    boolean available;
-                    synchronized (AndroidFTDIConnection.this.device) {
-                        available = AndroidFTDIConnection.this.device.getQueueStatus() > 0;
-                    }
-                    if(available) {
-                        try {
-                            AndroidFTDIConnection.this.notify();
-                        }
-                        catch (IllegalMonitorStateException e) {
+            while (!isInterrupted()) {
+//              Log.d(TAG, "Sleeping");
+//              sleep(DELAY_MS);
+//              Log.d(TAG, "Done sleeping, locking device...");
+                boolean available;
+                available = AndroidFTDIConnection.this.device.getQueueStatus() > 0;
 
-                        }
+//                Log.d(TAG, "Done locking device");
+                if (available) {
+                    try {
+//                        Log.d(TAG, "Notifying " + System.identityHashCode(AndroidFTDIConnection.this));
+                        AndroidFTDIConnection.this.notify();
+                    } catch (IllegalMonitorStateException e) {
+//                        Log.w(TAG, "Nothing waiting");
                     }
                 }
-            }
-            catch (InterruptedException e) {
-                // return
             }
         }
     }

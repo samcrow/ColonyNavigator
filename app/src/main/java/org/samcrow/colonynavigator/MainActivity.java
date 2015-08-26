@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
@@ -19,6 +20,12 @@ import android.widget.SearchView;
 import com.applantation.android.svg.SVG;
 import com.applantation.android.svg.SVGParseException;
 import com.applantation.android.svg.SVGParser;
+import com.ftdi.j2xx.D2xxManager;
+import com.ftdi.j2xx.FT_Device;
+import com.rapplogic.xbee.xbee.AndroidFTDIConnection;
+import com.rapplogic.xbee.xbee.api.InputStreamThread;
+import com.rapplogic.xbee.xbee.api.XBee;
+import com.rapplogic.xbee.xbee.api.XBeeConfiguration;
 
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.MapPosition;
@@ -52,6 +59,8 @@ import java.io.File;
  */
 public class MainActivity extends Activity implements
 		OnSharedPreferenceChangeListener, ColonyEditDialogFragment.ColonyChangeListener {
+
+	private static final String TAG = MainActivity.class.getSimpleName();
 
 	/**
 	 * The initial position of the map
@@ -355,47 +364,64 @@ public class MainActivity extends Activity implements
 			}
 		});
 
-//		final MenuItem xBeeTestItem = menu.findItem(R.id.test_item);
-//		xBeeTestItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-//			@Override
-//			public boolean onMenuItemClick(MenuItem item) {
-//
-//				try {
-//					final D2xxManager manager = D2xxManager.getInstance(MainActivity.this);
-//					final int deviceCount = manager.createDeviceInfoList(MainActivity.this);
-//					if(deviceCount > 0) {
-//						final FT_Device device = manager.openByIndex(MainActivity.this, 0);
-//						device.setBaudRate(9600);
-//
-//						final XBee xBee = new XBee();
-//						final AndroidFTDIConnection connection = new AndroidFTDIConnection(device);
-//						final InputStreamThread inputThread = new InputStreamThread(connection, new XBeeConfiguration()
-//
-//						xBee.open(connection);
-//
-//						xBee.close();
-//						device.close();
-//					}
-//					else {
-//						new AlertDialog.Builder(MainActivity.this)
-//								.setTitle("No devices")
-//								.setMessage("No FTDI devices are attached")
-//								.setIcon(android.R.drawable.ic_dialog_alert)
-//								.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
-//					}
-//
-//				} catch (Throwable e) {
-//					new AlertDialog.Builder(MainActivity.this)
-//							.setTitle(e.getClass().getSimpleName())
-//							.setMessage(e.getMessage())
-//							.setIcon(android.R.drawable.ic_dialog_alert)
-//							.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
-//				}
-//
-//				return true;
-//			}
-//		});
-		
+		final MenuItem xBeeTestItem = menu.findItem(R.id.test_item);
+		xBeeTestItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+			@Override
+			public boolean onMenuItemClick(MenuItem item) {
+
+				try {
+
+					Log.d(TAG, "=================== Opening device ==================");
+					final D2xxManager manager = D2xxManager.getInstance(MainActivity.this);
+					final int deviceCount = manager.createDeviceInfoList(MainActivity.this);
+					if (deviceCount > 0) {
+						final FT_Device device = manager.openByIndex(MainActivity.this, 0);
+						if(device == null) {
+							throw new NullPointerException("Device is null");
+						}
+						device.setBaudRate(9600);
+
+						final XBee xBee = new XBee();
+						final AndroidFTDIConnection connection = new AndroidFTDIConnection(device);
+						final InputStreamThread inputThread = new InputStreamThread(connection, new XBeeConfiguration());
+						Log.d(TAG, "=================== Done opening device ==================");
+
+						try {
+							Thread.sleep(500);
+							Log.d(TAG, "=================== Opening connection ==================");
+							xBee.open(connection);
+							Log.d(TAG, "=================== Done opening connection ==================");
+							Thread.sleep(500);
+						}
+						finally {
+							Log.d(TAG, "=================== Closing device ==================");
+							inputThread.interrupt();
+							xBee.close();
+							connection.close();
+							device.close();
+							Log.d(TAG, "=================== Done closing device ==================");
+						}
+					} else {
+						new AlertDialog.Builder(MainActivity.this)
+								.setTitle("No devices")
+								.setMessage("No FTDI devices are attached")
+								.setIcon(android.R.drawable.ic_dialog_alert)
+								.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
+					}
+
+				} catch (Throwable e) {
+					e.printStackTrace();
+					new AlertDialog.Builder(MainActivity.this)
+							.setTitle(e.getClass().getSimpleName())
+							.setMessage(e.getMessage())
+							.setIcon(android.R.drawable.ic_dialog_alert)
+							.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
+				}
+
+				return true;
+			}
+		});
+
 		return true;
 	}
 
