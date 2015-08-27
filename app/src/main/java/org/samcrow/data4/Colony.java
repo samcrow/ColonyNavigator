@@ -109,6 +109,16 @@ public class Colony {
         return attributes.get(attributeName);
     }
 
+    /**
+     * Gets an attribute of this colony, returning a default value if this colony does not have
+     * the requested attribute
+     * @param attributeName the name of the attribute
+     * @param defaultValue the value to return if this colony does not have the requested attribute
+     * @param <T> the type of the attribute
+     * @return the value of the requested property, or defaultValue if this colony does not have
+     * the requested attribute or the value of the attribute cannot be cast to T
+     */
+    @SuppressWarnings("unchecked")
     public <T> T getAttribute(String attributeName, T defaultValue) {
         final Object mapValue = attributes.get(attributeName);
         if(mapValue != null) {
