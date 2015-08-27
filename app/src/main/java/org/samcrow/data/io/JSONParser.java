@@ -8,8 +8,6 @@ import org.json.JSONObject;
 import org.samcrow.data4.Colony;
 import org.samcrow.data4.ColonySet;
 
-import java.util.Set;
-
 /**
  * Parses and encodes JSON
  * @author samcrow
@@ -73,23 +71,6 @@ public class JSONParser implements Parser<Colony> {
 		}
 
 		return colonies;
-	}
-
-	/**
-	 * Encode all the colonies in a set into a JSON array of data
-	 * @param colonies The colonies to encode
-	 * @return The data in JSON array format
-	 */
-	public JSONArray encodeAll(Set<Colony> colonies) {
-		JSONArray array = new JSONArray();
-		for(Colony colony : colonies) {
-			try {
-				array.put(toJSON(colony));
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-		return array;
 	}
 
 	protected static JSONObject toJSON(Colony value) throws JSONException {
