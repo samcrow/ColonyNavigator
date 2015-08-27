@@ -35,4 +35,5 @@ dependencies {
     compile 'org.mapsforge:mapsforge-map-reader:0.5.2-rc3'
     compile 'org.mapsforge:svg-android:0.4.3'
     androidTestCompile 'junit:junit:4.12'
+    compile 'commons-io:commons-io:20030203.000550'
 }

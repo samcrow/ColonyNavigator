@@ -53,6 +53,7 @@ import org.samcrow.data4.Colony;
 import org.samcrow.data4.ColonySet;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * The main activity
@@ -158,13 +159,22 @@ public class MainActivity extends Activity implements
 
 		layerManager = mapView.getLayerManager();
 
-		// Create a tile layer for OpenStreetMap data
-		TileRendererLayer tileRendererLayer = createTileRendererLayer(
-				tileCache,
-				initializePosition(mapView.getModel().mapViewPosition),
-				MAP_FILE, InternalRenderTheme.OSMARENDER, false);
+		try {
+			// Create a tile layer for OpenStreetMap data
+			TileRendererLayer tileRendererLayer = createTileRendererLayer(
+					tileCache,
+					initializePosition(mapView.getModel().mapViewPosition),
+					MAP_FILE, InternalRenderTheme.OSMARENDER, false);
 
-		layerManager.getLayers().add(tileRendererLayer);
+			layerManager.getLayers().add(tileRendererLayer);
+		}
+		catch (IOException e) {
+			new AlertDialog.Builder(MainActivity.this)
+					.setTitle("Failed to open map file")
+					.setMessage(e.getMessage())
+					.setIcon(android.R.drawable.ic_dialog_alert)
+					.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
+		}
 		mapView.getModel().mapViewPosition.setMapPosition(START_POSITION);
 	}
 	
@@ -217,10 +227,10 @@ public class MainActivity extends Activity implements
 		return 1.0f;
 	}
 
-	private static TileRendererLayer createTileRendererLayer(
+	private TileRendererLayer createTileRendererLayer(
 			TileCache tileCache, MapViewPosition mapViewPosition, File mapFile,
-			XmlRenderTheme renderTheme, boolean hasAlpha) {
-		TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, new MapFile(mapFile), mapViewPosition, hasAlpha, true, AndroidGraphicFactory.INSTANCE);
+			XmlRenderTheme renderTheme, boolean hasAlpha) throws IOException {
+		TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, new MapFile(MapFileResource.getMapFile(this, R.raw.site)), mapViewPosition, hasAlpha, true, AndroidGraphicFactory.INSTANCE);
 		tileRendererLayer.setXmlRenderTheme(renderTheme);
 		tileRendererLayer.setTextScale(1.5f);
 		return tileRendererLayer;
