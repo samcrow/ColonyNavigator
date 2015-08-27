@@ -11,7 +11,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 
-import org.samcrow.data4.Colony;
+import org.samcrow.colonynavigator.data4.Colony;
 
 public class ColonyDrawable extends Drawable {
 

@@ -5,8 +5,8 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.samcrow.data4.Colony;
-import org.samcrow.data4.ColonySet;
+import org.samcrow.colonynavigator.data4.Colony;
+import org.samcrow.colonynavigator.data4.ColonySet;
 
 import java.io.BufferedReader;
 import java.io.File;

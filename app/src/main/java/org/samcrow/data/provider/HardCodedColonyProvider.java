@@ -4,8 +4,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.samcrow.data.io.JSONParser;
-import org.samcrow.data4.Colony;
-import org.samcrow.data4.ColonySet;
+import org.samcrow.colonynavigator.data4.Colony;
+import org.samcrow.colonynavigator.data4.ColonySet;
 
 /**
  * Provides colonies from a hard-coded list.

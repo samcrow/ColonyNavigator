@@ -6,7 +6,7 @@ import org.mapsforge.core.model.Point;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
 import org.mapsforge.map.layer.overlay.Marker;
 import org.samcrow.colonynavigator.CoordinateTransformer;
-import org.samcrow.data4.Colony;
+import org.samcrow.colonynavigator.data4.Colony;
 
 public class ColonyMarker extends Marker {
 	

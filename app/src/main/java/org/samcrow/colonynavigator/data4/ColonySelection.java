@@ -1,6 +1,6 @@
-package org.samcrow.colonynavigator.data;
+package org.samcrow.colonynavigator.data4;
 
-import org.samcrow.data4.Colony;
+import org.samcrow.colonynavigator.data4.Colony;
 import java.util.ArrayList;
 import java.util.List;
 

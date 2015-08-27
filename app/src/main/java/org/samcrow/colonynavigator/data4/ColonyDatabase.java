@@ -1,4 +1,4 @@
-package org.samcrow.data4;
+package org.samcrow.colonynavigator.data4;
 
 import android.content.ContentValues;
 import android.content.Context;

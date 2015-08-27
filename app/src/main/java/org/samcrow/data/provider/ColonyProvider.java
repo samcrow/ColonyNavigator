@@ -1,7 +1,7 @@
 package org.samcrow.data.provider;
 
-import org.samcrow.data4.Colony;
-import org.samcrow.data4.ColonySet;
+import org.samcrow.colonynavigator.data4.Colony;
+import org.samcrow.colonynavigator.data4.ColonySet;
 
 /**
  * An interface for a class that can get colonies and update their information.

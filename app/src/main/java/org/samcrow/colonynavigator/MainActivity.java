@@ -42,15 +42,14 @@ import org.mapsforge.map.model.common.PreferencesFacade;
 import org.mapsforge.map.reader.MapFile;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
 import org.mapsforge.map.rendertheme.XmlRenderTheme;
-import org.samcrow.colonynavigator.data.ColonyList.NoSuchColonyException;
-import org.samcrow.colonynavigator.data.ColonySelection;
+import org.samcrow.colonynavigator.data4.ColonySelection;
 import org.samcrow.colonynavigator.map.ColonyMarker;
 import org.samcrow.colonynavigator.map.NotifyingMyLocationOverlay;
 import org.samcrow.colonynavigator.map.RouteLineLayer;
 import org.samcrow.data.provider.ColonyProvider;
 import org.samcrow.data.provider.MemoryCardDataProvider;
-import org.samcrow.data4.Colony;
-import org.samcrow.data4.ColonySet;
+import org.samcrow.colonynavigator.data4.Colony;
+import org.samcrow.colonynavigator.data4.ColonySet;
 
 import java.io.File;
 import java.io.IOException;
@@ -295,29 +294,32 @@ public class MainActivity extends Activity implements
 					int colonyId = Integer.valueOf(query);
 
 					Colony newSelectedColony = colonies.get(colonyId);
+					if(newSelectedColony != null) {
+						// Deselect the current selected colony and select the new one
+						selection.setSelectedColony(newSelectedColony);
 
-					// Deselect the current selected colony and select the new one
-					selection.setSelectedColony(newSelectedColony);
+						// Remove the focus from the search field
+						searchView.clearFocus();
 
-					// Remove the focus from the search field
-					searchView.clearFocus();
-
-					// Center the map view on the colony
-					mapView.getModel().mapViewPosition.animateTo(
-							CoordinateTransformer.getInstance().toGps((float)newSelectedColony.getX(),
-									(float) newSelectedColony.getY()));
-					
-					return true;
+						// Center the map view on the colony
+						mapView.getModel().mapViewPosition.animateTo(
+								CoordinateTransformer.getInstance().toGps((float) newSelectedColony.getX(),
+										(float) newSelectedColony.getY()));
+						return true;
+					}
+					else {
+						// No colony
+						new AlertDialog.Builder(MainActivity.this)
+								.setTitle("Not found")
+								.setMessage("No colony with that number exists")
+								.setIcon(android.R.drawable.ic_dialog_alert)
+								.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
+						return false;
+					}
 				} catch (NumberFormatException e) {
 					new AlertDialog.Builder(MainActivity.this)
 							.setTitle("Invalid query")
 							.setMessage("The search query is not a number")
-							.setIcon(android.R.drawable.ic_dialog_alert)
-							.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
-				} catch (NoSuchColonyException e) {
-					new AlertDialog.Builder(MainActivity.this)
-							.setTitle("Not found")
-							.setMessage("No colony with that number exists")
 							.setIcon(android.R.drawable.ic_dialog_alert)
 							.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
 				}

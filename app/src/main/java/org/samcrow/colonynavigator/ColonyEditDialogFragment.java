@@ -8,7 +8,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.CheckBox;
 
-import org.samcrow.data4.Colony;
+import org.samcrow.colonynavigator.data4.Colony;
 
 /**
  * A fragment that creates a dialog that can be used to edit a colony.

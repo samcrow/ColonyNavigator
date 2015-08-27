@@ -1,4 +1,4 @@
-package org.samcrow.data4;
+package org.samcrow.colonynavigator.data4;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

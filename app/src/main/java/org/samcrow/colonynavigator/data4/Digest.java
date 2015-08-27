@@ -1,4 +1,4 @@
-package org.samcrow.data4;
+package org.samcrow.colonynavigator.data4;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

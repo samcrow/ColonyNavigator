@@ -1,4 +1,4 @@
-package org.samcrow.data4;
+package org.samcrow.colonynavigator.data4;
 
 /**
  * Created by samcrow on 15-08-21.

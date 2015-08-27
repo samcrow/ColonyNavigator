@@ -4,8 +4,8 @@ import org.samcrow.data.io.CSVFileParser;
 import org.samcrow.data.io.FileParser;
 import org.samcrow.data.io.FocusColonyFinder;
 import org.samcrow.data.io.JSONFileParser;
-import org.samcrow.data4.Colony;
-import org.samcrow.data4.ColonySet;
+import org.samcrow.colonynavigator.data4.Colony;
+import org.samcrow.colonynavigator.data4.ColonySet;
 
 import java.io.File;
 import java.io.IOException;

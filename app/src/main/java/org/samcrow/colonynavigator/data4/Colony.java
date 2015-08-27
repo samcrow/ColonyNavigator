@@ -1,4 +1,4 @@
-package org.samcrow.data4;
+package org.samcrow.colonynavigator.data4;
 
 import org.joda.time.DateTime;
 
@@ -10,7 +10,7 @@ import java.util.Set;
 /**
  * Represents a colony
  */
-public class Colony {
+public class Colony extends Positioned {
 
 
     /**
@@ -26,11 +26,6 @@ public class Colony {
     /** The colony's identifier */
     private final int id;
 
-    /** The colony's X-coordinate in meters east of the southwest corner */
-    private double x;
-    /** The colony's Y-coordinate in meters north of the southwest corner */
-    private double y;
-
     /** The time this colony was updated */
     private DateTime updateTime;
 
@@ -43,15 +38,14 @@ public class Colony {
     private transient ColonyChangeListener listener = null;
 
     public Colony(int id) {
-        this.id = id;
-        updateTime = DateTime.now();
-        attributes = new HashMap<>();
+        this(id, 0, 0, false);
     }
 
     public Colony(int id, double x, double y, boolean active) {
-        this(id);
-        this.x = x;
-        this.y = y;
+        super(x, y);
+        this.id = id;
+        updateTime = DateTime.now();
+        attributes = new HashMap<>();
         this.setAttribute("census.active", active);
     }
 
@@ -59,24 +53,18 @@ public class Colony {
         return id;
     }
 
-    public double getX() {
-        return x;
-    }
-
+    @Override
     public void setX(double x) {
+        super.setX(x);
         markUpdated();
         notifyChanged();
-        this.x = x;
     }
 
-    public double getY() {
-        return y;
-    }
-
+    @Override
     public void setY(double y) {
+        super.setY(y);
         markUpdated();
         notifyChanged();
-        this.y = y;
     }
 
     /**

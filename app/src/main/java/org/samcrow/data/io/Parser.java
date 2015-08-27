@@ -1,7 +1,5 @@
 package org.samcrow.data.io;
 
-import org.samcrow.colonynavigator.data.Colony;
-
 /**
  * An interface for a class that can convert between
  * string and in-memory representations of colonies

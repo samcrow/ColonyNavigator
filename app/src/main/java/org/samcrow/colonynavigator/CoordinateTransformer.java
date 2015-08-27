@@ -4,7 +4,7 @@ import android.graphics.Matrix;
 import android.graphics.PointF;
 
 import org.mapsforge.core.model.LatLong;
-import org.samcrow.data4.Colony;
+import org.samcrow.colonynavigator.data4.Colony;
 
 /**
  * Transforms coordinates from GPS latitude/longitude into local colony

@@ -1,7 +1,7 @@
 package org.samcrow.data.io;
 
-import org.samcrow.data4.Colony;
-import org.samcrow.data4.ColonySet;
+import org.samcrow.colonynavigator.data4.Colony;
+import org.samcrow.colonynavigator.data4.ColonySet;
 
 import java.io.File;
 import java.util.Set;

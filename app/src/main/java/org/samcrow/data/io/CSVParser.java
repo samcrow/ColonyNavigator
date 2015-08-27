@@ -1,6 +1,6 @@
 package org.samcrow.data.io;
 
-import org.samcrow.data4.Colony;
+import org.samcrow.colonynavigator.data4.Colony;
 
 /**
  * Parses/encodes comma-delimited CSV representations of colonies
