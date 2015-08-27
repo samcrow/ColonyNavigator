@@ -65,6 +65,7 @@ public class Colony {
 
     public void setX(double x) {
         markUpdated();
+        notifyChanged();
         this.x = x;
     }
 
@@ -74,6 +75,7 @@ public class Colony {
 
     public void setY(double y) {
         markUpdated();
+        notifyChanged();
         this.y = y;
     }
 
@@ -82,6 +84,7 @@ public class Colony {
      * @param newTime the update time
      */
     public void setUpdateTime(DateTime newTime) {
+        notifyChanged();
         updateTime = newTime;
     }
 
@@ -92,7 +95,7 @@ public class Colony {
     /**
      * Updates this colony's update time by setting it to the current time
      */
-    private void markUpdated() {
+    protected void markUpdated() {
         updateTime = DateTime.now();
     }
 
@@ -129,6 +132,7 @@ public class Colony {
             throw new NullPointerException("value must not be null");
         }
         markUpdated();
+        notifyChanged();
         attributes.put(name, value);
     }
 
@@ -142,6 +146,7 @@ public class Colony {
 
     public void setAttributes(Map<String, Object> attrs) {
         markUpdated();
+        notifyChanged();
         attributes = new HashMap<>(attrs);
     }
     public Map<String, Object> getAttributes() {
@@ -152,7 +157,7 @@ public class Colony {
     /**
      * Notifies the listener that something has changed
      */
-    private void notifyChanged() {
+    protected void notifyChanged() {
         if (listener != null) {
             listener.onColonyChanged();
         }
