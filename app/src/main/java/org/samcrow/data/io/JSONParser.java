@@ -35,7 +35,7 @@ public class JSONParser implements Parser<Colony> {
 		colony.setAttribute("census.visited", json.optBoolean("visited", false));
 		colony.setAttribute("census.active", json.optBoolean("active", false));
 
-		final Object updatedObject = json.opt("updated");
+		final Object updatedObject = json.opt("modified");
 		if(updatedObject == null || JSONObject.NULL.equals(updatedObject) || !(updatedObject instanceof  String)) {
 			// Set to now
 			colony.setUpdateTime(DateTime.now());
@@ -82,7 +82,13 @@ public class JSONParser implements Parser<Colony> {
 	 */
 	public JSONArray encodeAll(Set<Colony> colonies) {
 		JSONArray array = new JSONArray();
-
+		for(Colony colony : colonies) {
+			try {
+				array.put(toJSON(colony));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
 		return array;
 	}
 
@@ -99,7 +105,7 @@ public class JSONParser implements Parser<Colony> {
 		}
 
 		final String updatedString = ISODateTimeFormat.dateTimeNoMillis().withZoneUTC().print(value.getUpdateTime());
-		json.put("updated", updatedString);
+		json.put("modified", updatedString);
 		return json;
 	}
 

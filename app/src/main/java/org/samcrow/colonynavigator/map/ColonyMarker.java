@@ -11,7 +11,7 @@ import org.samcrow.data4.Colony;
 public class ColonyMarker extends Marker {
 	
 	private Colony colony;
-	
+
 	public ColonyMarker(Colony colony, CoordinateTransformer transformer) {
 		super(transformer.toGps((float) colony.getX(), (float) colony.getY()), bitmapForColony(colony), 0, 0);
 		
@@ -40,6 +40,8 @@ public class ColonyMarker extends Marker {
 	}
 	
 	private static Bitmap bitmapForColony(Colony colony) {
-		return AndroidGraphicFactory.convertToBitmap(new ColonyDrawable(colony));
+		final ColonyDrawable drawable = new ColonyDrawable(colony);
+		return AndroidGraphicFactory.convertToBitmap(drawable);
 	}
+
 }

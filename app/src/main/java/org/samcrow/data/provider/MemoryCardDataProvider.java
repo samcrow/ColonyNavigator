@@ -195,7 +195,7 @@ public class MemoryCardDataProvider implements ColonyProvider {
 
 		@Override
 		public void run() {
-			File file = new File(cardPath +kJsonFileName);
+			File file = new File(cardPath + kJsonFileName);
 
 			FileParser parser = new JSONFileParser(file);
 			parser.write(colonies);
