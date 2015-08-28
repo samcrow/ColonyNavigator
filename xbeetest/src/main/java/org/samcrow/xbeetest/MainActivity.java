@@ -11,10 +11,7 @@ import android.view.MenuItem;
 
 import com.ftdi.j2xx.D2xxManager;
 import com.ftdi.j2xx.FT_Device;
-import com.rapplogic.xbee.xbee.AndroidFTDIConnection;
-import com.rapplogic.xbee.xbee.api.InputStreamThread;
-import com.rapplogic.xbee.xbee.api.XBee;
-import com.rapplogic.xbee.xbee.api.XBeeConfiguration;
+import com.rapplogic.xbee.api.XBee;
 
 public class MainActivity extends Activity {
 
@@ -42,20 +39,18 @@ public class MainActivity extends Activity {
 				device.setBaudRate(9600);
 
 				final XBee xBee = new XBee();
-				final AndroidFTDIConnection connection = new AndroidFTDIConnection(device);
 				Log.d(TAG, "=================== Done opening device ==================");
 
 				try {
 					Thread.sleep(500);
 					Log.d(TAG, "=================== Opening connection ==================");
-					xBee.open(connection);
+					xBee.open(device);
 					Log.d(TAG, "=================== Done opening connection ==================");
 					Thread.sleep(500);
 				}
 				finally {
 					Log.d(TAG, "=================== Closing device ==================");
 					xBee.close();
-					connection.close();
 					device.close();
 					Log.d(TAG, "=================== Done closing device ==================");
 				}

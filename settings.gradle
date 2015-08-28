@@ -1,1 +1,1 @@
-include ':app', ':xbeeandroid', ':xbeetest'
+include ':app', ':xbeeandroid', ':xbeetest', ':log4j-android'

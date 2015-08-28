@@ -25,10 +25,7 @@ import com.applantation.android.svg.SVGParseException;
 import com.applantation.android.svg.SVGParser;
 import com.ftdi.j2xx.D2xxManager;
 import com.ftdi.j2xx.FT_Device;
-import com.rapplogic.xbee.xbee.AndroidFTDIConnection;
-import com.rapplogic.xbee.xbee.api.InputStreamThread;
-import com.rapplogic.xbee.xbee.api.XBee;
-import com.rapplogic.xbee.xbee.api.XBeeConfiguration;
+import com.rapplogic.xbee.api.XBee;
 
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.MapPosition;
@@ -45,7 +42,9 @@ import org.mapsforge.map.model.common.PreferencesFacade;
 import org.mapsforge.map.reader.MapFile;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
 import org.mapsforge.map.rendertheme.XmlRenderTheme;
+import org.samcrow.colonynavigator.data4.Colony;
 import org.samcrow.colonynavigator.data4.ColonySelection;
+import org.samcrow.colonynavigator.data4.ColonySet;
 import org.samcrow.colonynavigator.data4.NewColony;
 import org.samcrow.colonynavigator.data4.NewColonyDatabase;
 import org.samcrow.colonynavigator.map.ColonyMarker;
@@ -53,8 +52,6 @@ import org.samcrow.colonynavigator.map.NotifyingMyLocationOverlay;
 import org.samcrow.colonynavigator.map.RouteLineLayer;
 import org.samcrow.data.provider.ColonyProvider;
 import org.samcrow.data.provider.MemoryCardDataProvider;
-import org.samcrow.colonynavigator.data4.Colony;
-import org.samcrow.colonynavigator.data4.ColonySet;
 
 import java.io.File;
 import java.io.IOException;
@@ -436,22 +433,18 @@ public class MainActivity extends Activity implements
 						device.setBaudRate(9600);
 
 						final XBee xBee = new XBee();
-						final AndroidFTDIConnection connection = new AndroidFTDIConnection(device);
-						final InputStreamThread inputThread = new InputStreamThread(connection, new XBeeConfiguration());
 						Log.d(TAG, "=================== Done opening device ==================");
 
 						try {
 							Thread.sleep(500);
 							Log.d(TAG, "=================== Opening connection ==================");
-							xBee.open(connection);
+							xBee.open(device);
 							Log.d(TAG, "=================== Done opening connection ==================");
 							Thread.sleep(500);
 						}
 						finally {
 							Log.d(TAG, "=================== Closing device ==================");
-							inputThread.interrupt();
 							xBee.close();
-							connection.close();
 							device.close();
 							Log.d(TAG, "=================== Done closing device ==================");
 						}

@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ColonyNavigator.iml" filepath="$PROJECT_DIR$/ColonyNavigator.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/log4j-android/log4j-android.iml" filepath="$PROJECT_DIR$/log4j-android/log4j-android.iml" />
       <module fileurl="file://$PROJECT_DIR$/xbeeandroid/xbeeandroid.iml" filepath="$PROJECT_DIR$/xbeeandroid/xbeeandroid.iml" />
       <module fileurl="file://$PROJECT_DIR$/xbeetest/xbeetest.iml" filepath="$PROJECT_DIR$/xbeetest/xbeetest.iml" />
     </modules>
