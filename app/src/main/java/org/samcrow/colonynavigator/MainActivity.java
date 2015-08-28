@@ -6,7 +6,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.database.SQLException;
+import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -14,6 +17,7 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MenuItem.OnMenuItemClickListener;
 import android.widget.FrameLayout;
 import android.widget.SearchView;
 
@@ -43,6 +47,8 @@ import org.mapsforge.map.reader.MapFile;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
 import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.samcrow.colonynavigator.data4.ColonySelection;
+import org.samcrow.colonynavigator.data4.NewColony;
+import org.samcrow.colonynavigator.data4.NewColonyDatabase;
 import org.samcrow.colonynavigator.map.ColonyMarker;
 import org.samcrow.colonynavigator.map.NotifyingMyLocationOverlay;
 import org.samcrow.colonynavigator.map.RouteLineLayer;
@@ -58,7 +64,8 @@ import java.io.IOException;
  * The main activity
  */
 public class MainActivity extends Activity implements
-		OnSharedPreferenceChangeListener, ColonyEditDialogFragment.ColonyChangeListener {
+		OnSharedPreferenceChangeListener, ColonyEditDialogFragment.ColonyChangeListener,
+		NewColonyDialogFragment.NewColonyListener {
 
 	private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -83,6 +90,9 @@ public class MainActivity extends Activity implements
 	private ColonyProvider provider;
 
 	private ColonySet colonies;
+
+	private NewColonyDatabase newColonyDB;
+
 	/**
 	 * The current selected colony
 	 */
@@ -119,6 +129,9 @@ public class MainActivity extends Activity implements
 			setUpLocationOverlay();
 			// Route line layer
 			setUpRouteLine();
+
+			// New colonies
+			newColonyDB = new NewColonyDatabase(this);
 
 		} catch (Exception ex) {
 			// Show a dialog, then quit
@@ -364,6 +377,31 @@ public class MainActivity extends Activity implements
 				return true;
 			}
 		});
+
+		// Add colony item
+		final MenuItem newColonyItem = menu.findItem(R.id.new_colony_item);
+		newColonyItem.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+			@Override
+			public boolean onMenuItemClick(MenuItem item) {
+				NewColonyDialogFragment dialog = new NewColonyDialogFragment();
+				dialog.show(getFragmentManager(), "new colony");
+				return true;
+			}
+		});
+
+		// Show colonies item
+		final MenuItem showColoniesItem = menu.findItem(R.id.show_new_colonies_item);
+		showColoniesItem.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+			@Override
+			public boolean onMenuItemClick(MenuItem item) {
+				new AlertDialog.Builder(MainActivity.this)
+						.setTitle("New colonies")
+						.setMessage(newColonyDB.getNewColonies().toString())
+						.setPositiveButton(R.string.ok, DIALOG_CLICK_NOOP)
+						.show();
+				return true;
+			}
+		});
 		
 		// Check for updates item
 		final MenuItem checkForUpdatesItem = menu.findItem(R.id.check_for_updates_item);
@@ -474,5 +512,30 @@ public class MainActivity extends Activity implements
 			return dir;
 		}
 		return Environment.getExternalStorageDirectory();
+	}
+
+	@Override
+	public void createColony(String name, String notes) {
+		final Location currentLocation = locationOverlay.getLastLocation();
+		if(currentLocation == null) {
+			new AlertDialog.Builder(this)
+					.setTitle("No location available")
+					.setMessage("Please wait for the GPS location to be acquired")
+					.setPositiveButton(R.string.ok, DIALOG_CLICK_NOOP)
+					.show();
+			return;
+		}
+		final PointF localCoords = CoordinateTransformer.getInstance().toLocal(currentLocation.getLongitude(), currentLocation.getLatitude());
+		final NewColony colony = new NewColony(localCoords.x, localCoords.y, name, notes);
+		try {
+			newColonyDB.insertNewColony(colony);
+		}
+		catch (SQLException e) {
+			new AlertDialog.Builder(this)
+					.setTitle("Could not save colony")
+					.setMessage(e.getMessage())
+					.setPositiveButton(R.string.ok, DIALOG_CLICK_NOOP)
+					.show();
+		}
 	}
 }

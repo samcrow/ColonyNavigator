@@ -2,7 +2,8 @@ package org.samcrow.colonynavigator;
 
 import android.content.Context;
 
-import org.apache.commons.io.IOUtil;
+
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,7 +34,7 @@ public class MapFileResource {
             try {
                 stream = ctx.getResources().openRawResource(resid);
                 fileOut = new FileOutputStream(storedFile);
-                IOUtil.copy(stream, fileOut);
+                IOUtils.copy(stream, fileOut);
                 return storedFile;
             }
             finally {

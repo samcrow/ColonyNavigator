@@ -10,9 +10,18 @@ public class NewColony extends Positioned {
     private final String name;
     private final String notes;
     private final DateTime timeCreated;
+    /**
+     * The identifier of this colony, used in the database
+     */
+    private final int id;
 
     public NewColony(double x, double y, String name, String notes) {
+        this(0, x, y, name, notes);
+    }
+
+    public NewColony(int id, double x, double y, String name, String notes) {
         super(x, y);
+        this.id = id;
         if(name == null) {
             throw new NullPointerException("name must not be null");
         }
@@ -36,8 +45,12 @@ public class NewColony extends Positioned {
         return timeCreated;
     }
 
+    public int getID() {
+        return id;
+    }
+
     @Override
     public String toString() {
-        return "New colony " + name + ": \"" + notes + "\"";
+        return "New colony " + name + " at (" + getX() + ", " + getY() + "): \"" + notes + "\"";
     }
 }
