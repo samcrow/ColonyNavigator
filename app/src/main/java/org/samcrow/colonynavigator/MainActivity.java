@@ -12,7 +12,6 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
@@ -59,6 +58,7 @@ import org.samcrow.colonynavigator.data4.ColonySet;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * The main activity
@@ -75,7 +75,7 @@ public class MainActivity extends Activity implements
 	private static final MapPosition START_POSITION = new MapPosition(
 			new LatLong(31.872176, -109.040983), (byte) 17);
 
-	private static final File MAP_FILE = new File(getSDCardPath().getAbsolutePath() + "/new-mexico.map");
+	private static final File MAP_FILE = new File(Storage.getMemoryCard().getAbsolutePath() + "/new-mexico.map");
 
 	private PreferencesFacade preferencesFacade;
 
@@ -115,7 +115,7 @@ public class MainActivity extends Activity implements
 			setUpMap();
 
 			// Add colonies
-			provider = new MemoryCardDataProvider(getSDCardPath());
+			provider = new MemoryCardDataProvider(Storage.getMemoryCard());
 
 			final CoordinateTransformer transformer = CoordinateTransformer.getInstance();
 			colonies = provider.getColonies();
@@ -242,7 +242,7 @@ public class MainActivity extends Activity implements
 	private TileRendererLayer createTileRendererLayer(
 			TileCache tileCache, MapViewPosition mapViewPosition, File mapFile,
 			XmlRenderTheme renderTheme, boolean hasAlpha) throws IOException {
-		TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, new MapFile(MapFileResource.getMapFile(this, R.raw.site)), mapViewPosition, hasAlpha, true, AndroidGraphicFactory.INSTANCE);
+		TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, new MapFile(Storage.getResourceAsFile(this, R.raw.site)), mapViewPosition, hasAlpha, true, AndroidGraphicFactory.INSTANCE);
 		tileRendererLayer.setXmlRenderTheme(renderTheme);
 		tileRendererLayer.setTextScale(1.5f);
 		return tileRendererLayer;
@@ -394,11 +394,14 @@ public class MainActivity extends Activity implements
 		showColoniesItem.setOnMenuItemClickListener(new OnMenuItemClickListener() {
 			@Override
 			public boolean onMenuItemClick(MenuItem item) {
-				new AlertDialog.Builder(MainActivity.this)
-						.setTitle("New colonies")
-						.setMessage(newColonyDB.getNewColonies().toString())
-						.setPositiveButton(R.string.ok, DIALOG_CLICK_NOOP)
-						.show();
+				final List<NewColony> colonies = newColonyDB.getNewColonies();
+
+				final NewColonyListDialogFragment dialog = new NewColonyListDialogFragment();
+				final Bundle args = new Bundle();
+				args.putParcelableArray("colonies", colonies.toArray(new NewColony[colonies.size()]));
+				dialog.setArguments(args);
+				dialog.show(getFragmentManager(), "new colony list");
+
 				return true;
 			}
 		});
@@ -500,18 +503,6 @@ public class MainActivity extends Activity implements
 		}
 		// Start location updates
 		locationOverlay.enableMyLocation(false);
-	}
-
-	private static File getSDCardPath() {
-		File dir = new File("/mnt/extSdCard");
-		if(dir.exists()) {
-			return dir;
-		}
-		dir = new File("/Removable/MicroSD");
-		if(dir.exists()) {
-			return dir;
-		}
-		return Environment.getExternalStorageDirectory();
 	}
 
 	@Override

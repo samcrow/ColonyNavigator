@@ -23,5 +23,6 @@
     <string name="action_settings">Settings</string>
     <string name="notes">Notes</string>
     <string name="name">Name</string>
+    <string name="export">Export</string>
 
 </resources>
