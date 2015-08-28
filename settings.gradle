@@ -1,1 +1,1 @@
-include ':app', ':xbeeandroid'
+include ':app', ':xbeeandroid', ':xbeetest'
