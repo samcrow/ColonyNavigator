@@ -28,7 +28,7 @@ public class CSVFileParser extends CSVParser implements FileParser {
 	}
 
 	@Override
-	public ColonySet parse() {
+	public ColonySet parse() throws  IOException {
 
 		ColonySet colonies = new ColonySet();
 
@@ -53,23 +53,20 @@ public class CSVFileParser extends CSVParser implements FileParser {
 
 			reader.close();
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+			throw new IOException(e);
 		}
 
 		return colonies;
 	}
 
 	@Override
-	public void write(Iterable<? extends Colony> values) {
+	public void write(Iterable<? extends Colony> values) throws  IOException {
 		//Delete the file, if it exists, so that it can be rewritten from the beginning
-		file.delete();
-		try {
-			file.createNewFile();
-		} catch (IOException e1) {
-			e1.printStackTrace();
+		final boolean deleteSuccess = file.delete();
+		if(!deleteSuccess) {
+			throw new IOException("Could not delete file");
 		}
+		file.createNewFile();
 
 		try {
 			PrintStream stream = new PrintStream(file);
@@ -81,7 +78,7 @@ public class CSVFileParser extends CSVParser implements FileParser {
 			stream.close();
 
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			throw new IOException(e);
 		}
 
 	}

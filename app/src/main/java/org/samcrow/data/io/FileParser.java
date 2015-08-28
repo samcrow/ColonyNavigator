@@ -4,6 +4,7 @@ import org.samcrow.colonynavigator.data4.Colony;
 import org.samcrow.colonynavigator.data4.ColonySet;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Set;
 
 /**
@@ -25,12 +26,12 @@ public interface FileParser extends Parser<Colony> {
 	 * empty {@link Set}.
 	 * @return The colonies
 	 */
-	ColonySet parse();
+	ColonySet parse() throws IOException;
 
 	/**
 	 * Write all of a set of objects to the data source
 	 * @param values The colonies to write
 	 */
-	void write(Iterable<? extends Colony> values);
+	void write(Iterable<? extends Colony> values) throws IOException;
 
 }

@@ -81,8 +81,6 @@ public class MainActivity extends Activity implements
 
 	private MapView mapView;
 
-	private TileCache tileCache;
-
 	private LayerManager layerManager;
 	
 	private NotifyingMyLocationOverlay locationOverlay;
@@ -115,7 +113,7 @@ public class MainActivity extends Activity implements
 			setUpMap();
 
 			// Add colonies
-			provider = new MemoryCardDataProvider(Storage.getMemoryCard());
+			provider = new MemoryCardDataProvider(this, Storage.getMemoryCard());
 
 			final CoordinateTransformer transformer = CoordinateTransformer.getInstance();
 			colonies = provider.getColonies();
@@ -164,7 +162,7 @@ public class MainActivity extends Activity implements
 		layout.addView(mapView);
 
 		// Create a tile cache
-		tileCache = AndroidUtil.createTileCache(this, getPersistableId(),
+		TileCache tileCache = AndroidUtil.createTileCache(this, getPersistableId(),
 				mapView.getModel().displayModel.getTileSize(),
 				getScreenRatio(),
 				mapView.getModel().frameBufferModel.getOverdrawFactor());

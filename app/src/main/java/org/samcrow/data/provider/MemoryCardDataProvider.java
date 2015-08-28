@@ -1,5 +1,13 @@
 package org.samcrow.data.provider;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.os.AsyncTask;
+import android.widget.Toast;
+
+import org.samcrow.colonynavigator.R;
 import org.samcrow.data.io.CSVFileParser;
 import org.samcrow.data.io.FileParser;
 import org.samcrow.data.io.FocusColonyFinder;
@@ -9,6 +17,7 @@ import org.samcrow.colonynavigator.data4.ColonySet;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Provides colonies from data stored on the memory card.
@@ -27,6 +36,8 @@ public class MemoryCardDataProvider implements ColonyProvider {
 
 	private final File cardPath;
 
+	private final Context context;
+
 	/**
 	 * The name, including the file extension, of the CSV file to use
 	 */
@@ -37,17 +48,14 @@ public class MemoryCardDataProvider implements ColonyProvider {
 	 */
 	private static final String kJsonFileName = "/colonies.json";
 
-	public MemoryCardDataProvider(File cardPath) {
+	public MemoryCardDataProvider(Context context, File cardPath) throws IOException {
+		this.context = context;
 		this.cardPath = cardPath;
 		//Create the directory if it doesn't already exist
 		cardPath.mkdirs();
 
 		File csvFile = new File(cardPath.getAbsolutePath() + kCsvFileName);
 		File jsonFile = new File(cardPath.getAbsolutePath() + kJsonFileName);
-
-		//Verify that this application has permission to write each of the files
-		if(csvFile.exists()) assert csvFile.canWrite();
-		if(jsonFile.exists()) assert jsonFile.canWrite();
 
 		//Case 1: Application hasn't been run before
 		//colonies.csv exists, colonies.json does not
@@ -120,7 +128,7 @@ public class MemoryCardDataProvider implements ColonyProvider {
 	 */
 	@Override
 	public void updateColonies() throws UnsupportedOperationException {
-		new FileWriteTask().start();
+		new FileWriteTask().execute();
 	}
 
 	/* (non-Javadoc)
@@ -129,7 +137,7 @@ public class MemoryCardDataProvider implements ColonyProvider {
 	@Override
 	public void updateColony(Colony colony)
 			throws UnsupportedOperationException {
-		new FileWriteTask().start();
+		new FileWriteTask().execute();
 
 	}
 
@@ -186,20 +194,53 @@ public class MemoryCardDataProvider implements ColonyProvider {
 		return finalSet;
 	}
 
+
+
 	/**
-	 * A thread that writes the colonies to the JSON file
+	 * A task that writes the colonies to the JSON file
 	 * 
 	 * @author Sam Crow
 	 */
-	private class FileWriteTask extends Thread {
+	private class FileWriteTask extends AsyncTask<Void, Void, Void> {
 
 		@Override
-		public void run() {
+		public Void doInBackground(Void... args) {
 			File file = new File(cardPath + kJsonFileName);
 
 			FileParser parser = new JSONFileParser(file);
-			parser.write(colonies);
-
+			try {
+				parser.write(colonies);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+			return null;
 		}
+
+		@Override
+		protected void onPostExecute(Void result) {
+			try {
+				get();
+				Toast.makeText(context, "Saved colonies", Toast.LENGTH_SHORT);
+			} catch (InterruptedException e) {
+			} catch (ExecutionException e) {
+				new AlertDialog.Builder(context)
+						.setTitle("Failed to save colonies")
+						.setMessage(ultimateCause(e).getMessage())
+						.setNeutralButton(R.string.ok, new OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+
+							}
+						})
+						.show();
+			}
+		}
+	}
+
+	private static Throwable ultimateCause(Throwable ex) {
+		while(ex.getCause() != null) {
+			ex = ex.getCause();
+		}
+		return ex;
 	}
 }

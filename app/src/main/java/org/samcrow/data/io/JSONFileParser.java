@@ -32,7 +32,7 @@ public class JSONFileParser extends JSONParser implements FileParser {
 	}
 
 	@Override
-	public ColonySet parse() {
+	public ColonySet parse() throws IOException {
 		ColonySet colonies = new ColonySet();
 
 		try {
@@ -68,11 +68,9 @@ public class JSONFileParser extends JSONParser implements FileParser {
 			}
 
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+			throw new IOException(e);
 		} catch (JSONException e) {
-			e.printStackTrace();
+			throw new IOException("Could not write JSON", e);
 		}
 
 
@@ -80,7 +78,7 @@ public class JSONFileParser extends JSONParser implements FileParser {
 	}
 
 	@Override
-	public void write(Iterable<? extends Colony> values) {
+	public void write(Iterable<? extends Colony> values) throws IOException {
 
 		boolean deleteResult = file.delete();
 		if(!deleteResult) {
@@ -101,7 +99,7 @@ public class JSONFileParser extends JSONParser implements FileParser {
 			try {
 				colonyArray.put(toJSON(colony));
 			} catch (JSONException e) {
-				e.printStackTrace();
+				throw new IOException("Could not write colony", e);
 			}
 		}
 
@@ -110,7 +108,7 @@ public class JSONFileParser extends JSONParser implements FileParser {
 			//Add a comment with some information for humans
 			jsonRoot.put("comment", "Serialized into JSON by "+toString()+" at "+ DateTime.now().toString(ISODateTimeFormat.basicDateTime()) +".");
 		} catch (JSONException e) {
-			e.printStackTrace();
+			throw new IOException("Could not create top-level JSON", e);
 		}
 
 		try {
@@ -118,7 +116,7 @@ public class JSONFileParser extends JSONParser implements FileParser {
 			stream.println(jsonRoot.toString());
 			stream.close();
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			throw new IOException(e);
 		}
 
 	}
