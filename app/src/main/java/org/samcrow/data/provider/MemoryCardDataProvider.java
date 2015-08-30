@@ -103,7 +103,7 @@ public class MemoryCardDataProvider implements ColonyProvider {
 		
 
 		//Look for focus_colonies.txt
-		File focusFile = new File(cardPath+"focus_colonies.txt");
+		File focusFile = new File(cardPath, "focus_colonies.txt");
 		if(focusFile.exists() && focusFile.canRead()) {
 			try {
 				new FocusColonyFinder(focusFile, colonies).updateColonies();
@@ -138,7 +138,6 @@ public class MemoryCardDataProvider implements ColonyProvider {
 	public void updateColony(Colony colony)
 			throws UnsupportedOperationException {
 		new FileWriteTask().execute();
-
 	}
 
 	/**
@@ -220,7 +219,7 @@ public class MemoryCardDataProvider implements ColonyProvider {
 		protected void onPostExecute(Void result) {
 			try {
 				get();
-				Toast.makeText(context, "Saved colonies", Toast.LENGTH_SHORT);
+				Toast.makeText(context, "Saved colonies", Toast.LENGTH_SHORT).show();
 			} catch (InterruptedException e) {
 			} catch (ExecutionException e) {
 				new AlertDialog.Builder(context)
