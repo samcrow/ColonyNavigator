@@ -29,8 +29,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * This class encapsulates a serial port, providing access to input/output streams,
- * and notifying the subclass of new data events via the handleSerialData method.
+ * This class encapsulates a serial port, providing access to input/output streams.
  *
  * @author andrew
  */
@@ -43,6 +42,8 @@ public class SerialPortConnection implements XBeeConnection {
 
 	private FT_Device serialPort;
 
+	private Notifier notifier;
+
 	public SerialPortConnection() {
 
 	}
@@ -52,13 +53,22 @@ public class SerialPortConnection implements XBeeConnection {
 
 		inputStream = new FTDIInputStream(serialPort);
 		outputStream = new BufferedOutputStream(new FTDIOutputStream(serialPort));
+
+		notifier = new Notifier();
+		notifier.start();
 	}
 
 	/**
-	 * Shuts down RXTX
+	 * Shuts down the serial connection
 	 */
 	@Override
 	public void close() throws IOException {
+		notifier.interrupt();
+		try {
+			notifier.join();
+		} catch (InterruptedException e) {
+			log.error("Interrupted while joining serial notifier thread", e);
+		}
 		serialPort.close();
 	}
 
@@ -89,6 +99,17 @@ public class SerialPortConnection implements XBeeConnection {
 		} catch (IOException ex) {
 			// it's best not to throw the exception because the RXTX thread may not be prepared to handle
 			log.error("RXTX error in serialEvent method", ex);
+		}
+	}
+
+	private class Notifier extends Thread {
+		@Override
+		public void run() {
+			while(!isInterrupted()) {
+				if(serialPort.getQueueStatus() > 0) {
+					serialEvent();
+				}
+			}
 		}
 	}
 }
