@@ -28,11 +28,9 @@
         android:title="Show colonies"
         android:showAsAction="never" />
 
-    <item android:id="@+id/test_item"
-          android:title="XBee"
-          android:showAsAction="never" />
-    
+
     <item android:id="@+id/check_for_updates_item" 
-        android:title="@string/check_for_updates"/>
+        android:title="@string/check_for_updates"
+        android:showAsAction="never"/>
 
 </menu>

@@ -13,7 +13,6 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
@@ -23,9 +22,6 @@ import android.widget.SearchView;
 import com.applantation.android.svg.SVG;
 import com.applantation.android.svg.SVGParseException;
 import com.applantation.android.svg.SVGParser;
-import com.ftdi.j2xx.D2xxManager;
-import com.ftdi.j2xx.FT_Device;
-import com.rapplogic.xbee.api.XBee;
 
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.MapPosition;
@@ -53,7 +49,6 @@ import org.samcrow.colonynavigator.map.RouteLineLayer;
 import org.samcrow.data.provider.ColonyProvider;
 import org.samcrow.data.provider.MemoryCardDataProvider;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -64,15 +59,11 @@ public class MainActivity extends Activity implements
 		OnSharedPreferenceChangeListener, ColonyEditDialogFragment.ColonyChangeListener,
 		NewColonyDialogFragment.NewColonyListener {
 
-	private static final String TAG = MainActivity.class.getSimpleName();
-
 	/**
 	 * The initial position of the map
 	 */
 	private static final MapPosition START_POSITION = new MapPosition(
 			new LatLong(31.872176, -109.040983), (byte) 17);
-
-	private static final File MAP_FILE = new File(Storage.getMemoryCard().getAbsolutePath() + "/new-mexico.map");
 
 	private PreferencesFacade preferencesFacade;
 
@@ -171,7 +162,7 @@ public class MainActivity extends Activity implements
 			TileRendererLayer tileRendererLayer = createTileRendererLayer(
 					tileCache,
 					initializePosition(mapView.getModel().mapViewPosition),
-					MAP_FILE, InternalRenderTheme.OSMARENDER, false);
+					InternalRenderTheme.OSMARENDER, false);
 
 			layerManager.getLayers().add(tileRendererLayer);
 		}
@@ -235,7 +226,7 @@ public class MainActivity extends Activity implements
 	}
 
 	private TileRendererLayer createTileRendererLayer(
-			TileCache tileCache, MapViewPosition mapViewPosition, File mapFile,
+			TileCache tileCache, MapViewPosition mapViewPosition,
 			XmlRenderTheme renderTheme, boolean hasAlpha) throws IOException {
 		TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, new MapFile(Storage.getResourceAsFile(this, R.raw.site)), mapViewPosition, hasAlpha, true, AndroidGraphicFactory.INSTANCE);
 		tileRendererLayer.setXmlRenderTheme(renderTheme);
@@ -254,8 +245,7 @@ public class MainActivity extends Activity implements
 			final SVG svg = SVGParser.getSVGFromResource(getResources(), R.raw.my_location);
 			return svg.createPictureDrawable();
 		} catch (SVGParseException e) {
-			e.printStackTrace();
-			return null;
+			throw new RuntimeException("Could not load my location image", e);
 		}
 	}
 	
@@ -411,60 +401,6 @@ public class MainActivity extends Activity implements
 				intent.setData(Uri.parse("https://dl.dropboxusercontent.com/u/1278290/ColonyNavigator3Update"));
 				startActivity(intent);
 				
-				return true;
-			}
-		});
-
-		final MenuItem xBeeTestItem = menu.findItem(R.id.test_item);
-		xBeeTestItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-			@Override
-			public boolean onMenuItemClick(MenuItem item) {
-
-				try {
-
-					Log.d(TAG, "=================== Opening device ==================");
-					final D2xxManager manager = D2xxManager.getInstance(MainActivity.this);
-					final int deviceCount = manager.createDeviceInfoList(MainActivity.this);
-					if (deviceCount > 0) {
-						final FT_Device device = manager.openByIndex(MainActivity.this, 0);
-						if(device == null) {
-							throw new NullPointerException("Device is null");
-						}
-						device.setBaudRate(9600);
-
-						final XBee xBee = new XBee();
-						Log.d(TAG, "=================== Done opening device ==================");
-
-						try {
-							Thread.sleep(500);
-							Log.d(TAG, "=================== Opening connection ==================");
-							xBee.open(device);
-							Log.d(TAG, "=================== Done opening connection ==================");
-							Thread.sleep(500);
-						}
-						finally {
-							Log.d(TAG, "=================== Closing device ==================");
-							xBee.close();
-							device.close();
-							Log.d(TAG, "=================== Done closing device ==================");
-						}
-					} else {
-						new AlertDialog.Builder(MainActivity.this)
-								.setTitle("No devices")
-								.setMessage("No FTDI devices are attached")
-								.setIcon(android.R.drawable.ic_dialog_alert)
-								.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
-					}
-
-				} catch (Throwable e) {
-					e.printStackTrace();
-					new AlertDialog.Builder(MainActivity.this)
-							.setTitle(e.getClass().getSimpleName())
-							.setMessage(e.getMessage())
-							.setIcon(android.R.drawable.ic_dialog_alert)
-							.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
-				}
-
 				return true;
 			}
 		});
