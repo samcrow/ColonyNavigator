@@ -1,19 +1,14 @@
 package com.rapplogic.xbee;
 
-import android.util.Log;
-
 import com.ftdi.j2xx.FT_Device;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
 
 /**
  * An OutputStream that writes bytes to an FTDI device
  */
 public class FTDIOutputStream extends OutputStream {
-
-    private static final String TAG = FTDIOutputStream.class.getSimpleName();
 
     /**
      * The device
@@ -30,11 +25,9 @@ public class FTDIOutputStream extends OutputStream {
     @Override
     public void write(int oneByte) throws IOException {
         if (!device.isOpen()) throw new AssertionError("Device not open");
-        Log.i(TAG, "Writing byte...");
         synchronized (device) {
             device.write(new byte[]{(byte) oneByte});
         }
-        Log.i(TAG, "Done writing byte");
     }
 
     /**
@@ -53,10 +46,8 @@ public class FTDIOutputStream extends OutputStream {
     @Override
     public void write(byte[] buffer) throws IOException {
         if (!device.isOpen()) throw new AssertionError("Device not open");
-        Log.i(TAG, "Writing bytes " + Arrays.toString(buffer));
         synchronized (device) {
             device.write(buffer);
         }
-        Log.i(TAG, "Done writing byte");
     }
 }

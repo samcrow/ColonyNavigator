@@ -8,52 +8,72 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 
 import com.ftdi.j2xx.D2xxManager;
 import com.ftdi.j2xx.FT_Device;
 import com.rapplogic.xbee.api.XBee;
+import com.rapplogic.xbee.api.XBeeResponse;
+
+import org.samcrow.xbeenet.MessageHandler;
+import org.samcrow.xbeenet.XBeeNet;
+
+import java.io.IOException;
 
 public class MainActivity extends Activity {
 
 	private static final String TAG = MainActivity.class.getSimpleName();
+	private XBeeNet net;
+
+	private static final long PAN_ID = 0xa28d37a12b0c6a47L;
+
+	private EditText console;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		testXBee();
+
+		console = (EditText) findViewById(R.id.console);
 	}
 
-	private void testXBee() {
+	private void connect() {
+
+		if (net != null) {
+			try {
+				net.close();
+			} catch (IOException e) {
+				// Nothing
+			}
+		}
 
 		try {
-
-			Log.d(TAG, "=================== Opening device ==================");
 			final D2xxManager manager = D2xxManager.getInstance(MainActivity.this);
 			final int deviceCount = manager.createDeviceInfoList(MainActivity.this);
 			if (deviceCount > 0) {
 				final FT_Device device = manager.openByIndex(MainActivity.this, 0);
-				if(device == null) {
+				if (device == null) {
 					throw new NullPointerException("Device is null");
 				}
 				device.setBaudRate(9600);
 
 				final XBee xBee = new XBee();
-				Log.d(TAG, "=================== Done opening device ==================");
+				xBee.open(device);
 
-				try {
-					Thread.sleep(500);
-					Log.d(TAG, "=================== Opening connection ==================");
-					xBee.open(device);
-					Log.d(TAG, "=================== Done opening connection ==================");
-					Thread.sleep(500);
-				}
-				finally {
-					Log.d(TAG, "=================== Closing device ==================");
-					xBee.close();
-					device.close();
-					Log.d(TAG, "=================== Done closing device ==================");
-				}
+				net = new XBeeNet(xBee, this);
+				net.setHandler(new MessageHandler() {
+					@Override
+					public void messageReceived(String message) {
+						console.getText().append(message);
+						Log.i(TAG, "Received message: " + message);
+					}
+
+					@Override
+					public void frameReceived(XBeeResponse frame) {
+						console.getText().append(frame.toString());
+						Log.i(TAG, "Received message: " + frame);
+					}
+				});
 			} else {
 				new AlertDialog.Builder(MainActivity.this)
 						.setTitle("No devices")
@@ -71,6 +91,12 @@ public class MainActivity extends Activity {
 					.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
 		}
 
+	}
+
+	private void sendMessage() {
+		if(net != null) {
+			net.broadcastMessage("Hello, World!");
+		}
 	}
 
 	private static final OnClickListener DIALOG_CLICK_NOOP = new OnClickListener() {
@@ -95,7 +121,12 @@ public class MainActivity extends Activity {
 		int id = item.getItemId();
 
 		//noinspection SimplifiableIfStatement
-		if (id == R.id.action_settings) {
+		if (id == R.id.action_test_xbee) {
+			connect();
+			return true;
+		}
+		else if(id == R.id.action_send) {
+			sendMessage();
 			return true;
 		}
 

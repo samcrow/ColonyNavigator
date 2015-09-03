@@ -37,9 +37,9 @@ public class ColonyDatabase extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         try {
             db.beginTransaction();
-            db.execSQL("CREATE TABLE ? (\"id\" integer primary key NOT NULL, \"x\" double NOT NULL, " +
+            db.execSQL("CREATE TABLE \"" + TABLE_NAME + "\" (\"id\" integer primary key NOT NULL, \"x\" double NOT NULL, " +
                     "\"y\" double NOT NULL, \"data\" text NOT NULL DEFAULT \"{}\", \"update_time\" " +
-                    "text NOT NULL DEFAULT \"\" );", new Object[]{TABLE_NAME});
+                    "text NOT NULL DEFAULT \"\" );", new Object[0]);
         } finally {
             db.endTransaction();
         }

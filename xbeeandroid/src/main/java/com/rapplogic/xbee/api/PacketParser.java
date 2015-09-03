@@ -144,7 +144,7 @@ public class PacketParser implements IIntInputStream, IPacketParser {
 			
 			// total packet length = stated length + 1 start byte + 1 checksum byte + 2 length bytes
 			
-			intApiId = this.read("API ID");
+			intApiId = this.read("API ID") & 0xFF;
 			
 			this.apiId = ApiId.get(intApiId);
 			

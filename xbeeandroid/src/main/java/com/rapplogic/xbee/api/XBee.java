@@ -541,7 +541,6 @@ public class XBee implements IXBee {
 		}
 		
 		try {
-//			xbeeConnection.getOutputStream().close();
 			xbeeConnection.close();
 		} catch (IOException e) {
 			log.warn("Failed to close connection", e);

@@ -10,9 +10,11 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/antchat" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/log4j-android" />
             <option value="$PROJECT_DIR$/xbeeandroid" />
+            <option value="$PROJECT_DIR$/xbeenet" />
             <option value="$PROJECT_DIR$/xbeetest" />
           </set>
         </option>

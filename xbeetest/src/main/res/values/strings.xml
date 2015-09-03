@@ -3,4 +3,7 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="xbee">XBee</string>
+    <string name="send">Send</string>
+    <string name="connect">Connect</string>
 </resources>

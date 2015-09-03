@@ -1,0 +1,11 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="org.samcrow.xbeenet">
+
+    <application android:allowBackup="true"
+                 android:label="@string/app_name">
+        <service android:name=".XBeeService"
+                 android:exported="false" />
+    </application>
+
+
+</manifest>

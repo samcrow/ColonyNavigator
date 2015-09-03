@@ -105,10 +105,16 @@ public class SerialPortConnection implements XBeeConnection {
 	private class Notifier extends Thread {
 		@Override
 		public void run() {
-			while(!isInterrupted()) {
-				if(serialPort.getQueueStatus() > 0) {
-					serialEvent();
+			try {
+				while (!isInterrupted()) {
+					if (serialPort.getQueueStatus() > 0) {
+						serialEvent();
+					}
+					sleep(100);
 				}
+			}
+			catch (InterruptedException e) {
+				// Return
 			}
 		}
 	}

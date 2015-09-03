@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context=".MessagingActivity">
+    <item android:id="@+id/action_connect"
+          android:title="@string/reconnect"
+          android:icon="@drawable/ic_perm_scan_wifi_white_24dp"
+          android:showAsAction="always"/>
+</menu>
