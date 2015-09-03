@@ -2,6 +2,7 @@ package org.samcrow.antchat;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -13,6 +14,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff.Mode;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -137,7 +139,7 @@ public class MessagingActivity extends Activity {
 		if(net != null) {
 			try {
 				net.close();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				// Nothing
 			}
 			sendButton.setEnabled(false);
@@ -149,7 +151,7 @@ public class MessagingActivity extends Activity {
 		if(net != null) {
 			try {
 				net.close();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				// Nothing
 			}
 		}
@@ -173,8 +175,9 @@ public class MessagingActivity extends Activity {
 							.setContentText(message.getText())
 							.setSmallIcon(R.drawable.ic_chat_white_24dp)
 							.setAutoCancel(true)
+							.setSound(Uri.parse("android.resource://org.samcrow.antchat/raw/notification_vibraphone"))
 							.build();
-					manager.notify(new Random().nextInt(), notification);
+					manager.notify(0, notification);
 
 					db.insertMessage(message);
 				}
@@ -303,6 +306,25 @@ public class MessagingActivity extends Activity {
 		if (id == R.id.action_connect) {
 			connect();
 			return true;
+		}
+		else if(id == R.id.action_delete_messages) {
+			new Builder(this)
+					.setTitle("Delete messages")
+					.setMessage("Are you sure you want to delete all messages?")
+					.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							// Nothing
+						}
+					})
+					.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							model.clear();
+							db.deleteAllMessages();
+						}
+					})
+					.show();
 		}
 
 		return super.onOptionsItemSelected(item);

@@ -79,6 +79,19 @@ public class MessageDB extends SQLiteOpenHelper {
 		}
 	}
 
+	public void deleteAllMessages() {
+		SQLiteDatabase db = null;
+		try {
+			db = getWritableDatabase();
+			db.execSQL("DELETE FROM \"" + TABLE_NAME + "\"");
+		}
+		finally {
+			if(db != null) {
+				db.close();
+			}
+		}
+	}
+
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL("CREATE TABLE \"" + TABLE_NAME + "\" (" +

@@ -1,6 +1,5 @@
 package org.samcrow.antchat;
 
-import android.os.AsyncTask;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -29,6 +28,11 @@ public class MessageModel extends BaseAdapter {
 
 	public void add(Message message) {
 		messages.add(message);
+		notifyDataSetChanged();
+	}
+
+	public void clear() {
+		messages.clear();
 		notifyDataSetChanged();
 	}
 
