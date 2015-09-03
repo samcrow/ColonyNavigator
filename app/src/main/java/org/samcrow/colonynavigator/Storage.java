@@ -44,7 +44,7 @@ public class Storage {
 	}
 
 	private static File pathForResource(Context ctx, int resid) {
-	    return new File(ctx.getFilesDir().getAbsolutePath() + "/" + resid + ".resource");
+	    return new File(ctx.getCacheDir().getAbsolutePath(), resid + ".resource");
 	}
 
 	/**
