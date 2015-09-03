@@ -115,11 +115,11 @@ public class CoordinateTransformer {
 		
 		if(instance == null) {
 			
-			final MapPoint topLeft = new MapPoint(new Colony(962, 68, 707, false), 31.87265776, -109.04243);
-			final MapPoint bottomRight = new MapPoint(new Colony(980, 1324, 289, false), 31.87087500797029, -109.03870950670428);
-			final MapPoint bottomLeft = new MapPoint(new Colony(567, 110, 110, false), 31.871036, -109.042678);
+			final MapPoint topLeft = new MapPoint(new Colony("962", 68, 707, false), 31.87265776, -109.04243);
+			final MapPoint bottomRight = new MapPoint(new Colony("980", 1324, 289, false), 31.87087500797029, -109.03870950670428);
+			final MapPoint bottomLeft = new MapPoint(new Colony("567", 110, 110, false), 31.871036, -109.042678);
 			@SuppressWarnings("unused")
-			final MapPoint topRight = new MapPoint(new Colony(442, 110, 782, false), 31.872357, -109.0391114);
+			final MapPoint topRight = new MapPoint(new Colony("442", 110, 782, false), 31.872357, -109.0391114);
 			
 			instance = new CoordinateTransformer(topLeft, bottomRight, bottomLeft);
 		}

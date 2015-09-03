@@ -19,12 +19,12 @@ public class CSVParser implements Parser<Colony> {
 	 */
 	@Override
 	public Colony parseOne(String line) {
-
+		line = line.trim();
 		//Split the line into parts separated by commas
 		String[] parts = line.split("\\s*,\\s*");
 		try {
 
-			int colonyNumber = Integer.valueOf(parts[0]);
+			String colonyId = parts[0];
 			int x = Integer.valueOf(parts[1]);
 			int y = Integer.valueOf(parts[2]);
 
@@ -32,7 +32,7 @@ public class CSVParser implements Parser<Colony> {
 			//			//Active if part 3 is A (case insensitive), otherwise false
 			//			boolean active = parts[3].compareToIgnoreCase("A") == 0;
 
-			final Colony colony = new Colony(colonyNumber);
+			final Colony colony = new Colony(colonyId);
 			colony.setX(x);
 			colony.setY(y);
 			colony.setAttribute("census.active", false);

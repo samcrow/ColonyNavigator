@@ -24,7 +24,7 @@ public class Colony extends Positioned {
     }
 
     /** The colony's identifier */
-    private final int id;
+    private final String id;
 
     /** The time this colony was updated */
     private DateTime updateTime;
@@ -37,11 +37,11 @@ public class Colony extends Positioned {
     /** The change listener */
     private transient ColonyChangeListener listener = null;
 
-    public Colony(int id) {
+    public Colony(String id) {
         this(id, 0, 0, false);
     }
 
-    public Colony(int id, double x, double y, boolean active) {
+    public Colony(String id, double x, double y, boolean active) {
         super(x, y);
         this.id = id;
         updateTime = DateTime.now();
@@ -49,7 +49,7 @@ public class Colony extends Positioned {
         this.setAttribute("census.active", active);
     }
 
-    public int getID() {
+    public String getID() {
         return id;
     }
 

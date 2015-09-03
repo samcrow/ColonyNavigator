@@ -1,6 +1,5 @@
 package org.samcrow.colonynavigator.data4;
 
-import org.samcrow.colonynavigator.data4.Colony;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +28,7 @@ public class ColonySelection {
 	
 	private Colony selectedColony;
 	
-	private List<Listener> listeners = new ArrayList<Listener>();
+	private List<Listener> listeners = new ArrayList<>();
 	
 	/**
 	 * 

@@ -26,7 +26,7 @@ public class JSONParser implements Parser<Colony> {
 	}
 
 	protected static Colony fromJSON(JSONObject json) throws JSONException {
-		Colony colony = new Colony(json.getInt("id"));
+		Colony colony = new Colony(json.getString("id"));
 		colony.setX(json.getDouble("x"));
 		colony.setY(json.getDouble("y"));
 
@@ -75,7 +75,14 @@ public class JSONParser implements Parser<Colony> {
 
 	protected static JSONObject toJSON(Colony value) throws JSONException {
 		final JSONObject json = new JSONObject();
-		json.put("id", value.getID());
+		// Put the ID as an integer if it is valid
+		try {
+			json.put("id", Integer.valueOf(value.getID()));
+		}
+		catch (NumberFormatException e) {
+			json.put("id", value.getID());
+		}
+
 		json.put("x", value.getX());
 		json.put("y", value.getY());
 		if(value.hasAttribute("census.visited")) {

@@ -166,7 +166,7 @@ public class MemoryCardDataProvider implements ColonyProvider {
 		ColonySet finalSet = new ColonySet();
 
 		for(Colony colony : base) {
-			int id = colony.getID();
+			String id = colony.getID();
 
 			Colony supplementColony = supplement.get(id);
 			if(supplementColony != null) {
@@ -180,7 +180,7 @@ public class MemoryCardDataProvider implements ColonyProvider {
 		}
 		//Add every colony that's in the supplement
 		for(Colony supplementColony : supplement) {
-			int id = supplementColony.getID();
+			String id = supplementColony.getID();
 
 			Colony baseColony = base.get(id);
 			if(baseColony == null) {
@@ -221,6 +221,7 @@ public class MemoryCardDataProvider implements ColonyProvider {
 				get();
 				Toast.makeText(context, "Saved colonies", Toast.LENGTH_SHORT).show();
 			} catch (InterruptedException e) {
+				// Nothing
 			} catch (ExecutionException e) {
 				new AlertDialog.Builder(context)
 						.setTitle("Failed to save colonies")

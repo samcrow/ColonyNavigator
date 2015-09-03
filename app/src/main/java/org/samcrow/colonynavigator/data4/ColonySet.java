@@ -9,7 +9,7 @@ import java.util.LinkedHashMap;
  */
 public class ColonySet implements Iterable<Colony> {
 
-    private final LinkedHashMap<Integer, Colony> map;
+    private final LinkedHashMap<String, Colony> map;
 
     /**
      * Creates a new empty set of colonies
@@ -47,7 +47,7 @@ public class ColonySet implements Iterable<Colony> {
      * @param id the ID of the colony to find
      * @return the matching colony, or null if no colony with that ID is available
      */
-    public Colony get(int id) {
+    public Colony get(String id) {
         return map.get(id);
     }
 

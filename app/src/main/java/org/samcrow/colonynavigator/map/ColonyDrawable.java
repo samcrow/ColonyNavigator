@@ -73,12 +73,11 @@ public class ColonyDrawable extends Drawable {
 
 	private boolean colonySelected;
 
-	private final String colonyIdString;
 	private final int idStringWidth;
 	
 	public ColonyDrawable(Colony colony) {
 		this.colony = colony;
-		colonyIdString = String.valueOf(colony.getID());
+		String colonyIdString = colony.getID();
 		idStringWidth = (int) Math.ceil(paint.measureText(colonyIdString));
 		
 		paint.setAntiAlias(true);
@@ -197,7 +196,7 @@ public class ColonyDrawable extends Drawable {
 	
 	/**
 	 * Draws a background circle in the provided color
-	 * @param color
+	 *
 	 */
 	private void drawBackgroundCircle(Canvas canvas, float centerX, float centerY, int color) {
 		paint.setColor(color);

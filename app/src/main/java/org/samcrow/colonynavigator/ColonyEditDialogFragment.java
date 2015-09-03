@@ -36,7 +36,7 @@ public class ColonyEditDialogFragment extends DialogFragment {
 		final ColonyEditDialogFragment fragment = new ColonyEditDialogFragment();
 		final Bundle args = new Bundle();
 		
-		args.putInt("colony_id", colony.getID());
+		args.putString("colony_id", colony.getID());
 		args.putBoolean("colony_visited", colony.getAttribute("census.visited", false));
 		args.putBoolean("colony_active", colony.getAttribute("census.active", false));
 		
@@ -50,7 +50,7 @@ public class ColonyEditDialogFragment extends DialogFragment {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		
 		final Bundle args = getArguments();
-		final int colonyId = args.getInt("colony_id");
+		final String colonyId = args.getString("colony_id");
 		final boolean colonyVisited = args.getBoolean("colony_visited");
 		final boolean colonyActive = args.getBoolean("colony_active");
 		
@@ -76,7 +76,7 @@ public class ColonyEditDialogFragment extends DialogFragment {
 				
 					// Save colony
 					Bundle newData = new Bundle();
-					newData.putInt("colony_id", colonyId);
+					newData.putString("colony_id", colonyId);
 					newData.putBoolean("colony_visited", visitedBox.isChecked());
 					newData.putBoolean("colony_active", activeBox.isChecked());
 					

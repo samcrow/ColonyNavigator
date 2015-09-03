@@ -253,7 +253,7 @@ public class MainActivity extends Activity implements
 	@Override
 	public void onColonyChanged(Bundle colonyData) {
 		// Find the colony that was changed and update its data
-		final int colonyId = colonyData.getInt("colony_id");
+		final String colonyId = colonyData.getString("colony_id");
 		Colony colony = colonies.get(colonyId);
 		if(colonyData.containsKey("colony_visited")) {
 			colony.setAttribute("census.visited", colonyData.getBoolean("colony_visited"));
@@ -276,7 +276,7 @@ public class MainActivity extends Activity implements
 		searchItem.expandActionView();
 		final SearchView searchView = (SearchView) searchItem.getActionView();
 		// Configure: Only expect numbers
-		searchView.setInputType(InputType.TYPE_CLASS_NUMBER);
+		searchView.setInputType(InputType.TYPE_CLASS_TEXT);
 
 		searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
@@ -289,7 +289,7 @@ public class MainActivity extends Activity implements
 			public boolean onQueryTextSubmit(String query) {
 				// Search for the colony
 				try {
-					int colonyId = Integer.valueOf(query);
+					String colonyId = query.trim();
 
 					Colony newSelectedColony = colonies.get(colonyId);
 					if(newSelectedColony != null) {
