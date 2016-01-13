@@ -3,7 +3,7 @@ apply plugin: 'com.android.databinding'
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "21.1.1"
+    buildToolsVersion '23.0.1'
     defaultConfig {
         applicationId "org.samcrow.colonynavigator"
         minSdkVersion 16
