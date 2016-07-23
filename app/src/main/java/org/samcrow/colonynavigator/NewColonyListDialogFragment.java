@@ -3,7 +3,6 @@ package org.samcrow.colonynavigator;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.database.DataSetObserver;
@@ -11,7 +10,6 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListAdapter;
@@ -23,7 +21,6 @@ import org.samcrow.colonynavigator.data4.NewColonyWriteTask;
 import org.samcrow.colonynavigator.data4.NewColonyWriteTask.Params;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * A dialog allowing the user to create a {@link org.samcrow.colonynavigator.data4.NewColony}
@@ -31,122 +28,123 @@ import java.util.List;
 public class NewColonyListDialogFragment extends DialogFragment {
 
 
-	@Override
-	public Dialog onCreateDialog(Bundle savedInstanceState) {
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(), AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(),
+                AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
 
-		builder.setTitle("New colonies");
-		// Inflate the view from the XML file
-		final View view = getActivity().getLayoutInflater().inflate(R.layout.new_colony_list, null);
-		builder.setView(view);
+        builder.setTitle("New colonies");
+        // Inflate the view from the XML file
+        final View view = getActivity().getLayoutInflater().inflate(R.layout.new_colony_list, null);
+        builder.setView(view);
 
-		final ListView list = (ListView) view.findViewById(R.id.new_colony_list);
+        final ListView list = (ListView) view.findViewById(R.id.new_colony_list);
 
-		// Load new colonies from the arguments
-		final Bundle args = getArguments();
-		final NewColony[] colonies = (NewColony[]) args.getParcelableArray("colonies");
-		list.setAdapter(new NewColonyAdapter(colonies));
+        // Load new colonies from the arguments
+        final Bundle args = getArguments();
+        final NewColony[] colonies = (NewColony[]) args.getParcelableArray("colonies");
+        list.setAdapter(new NewColonyAdapter(colonies));
 
-		// Set up buttons
+        // Set up buttons
 
-		final Button exportButton = (Button) view.findViewById(R.id.save_new_colonies_button);
-		exportButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				final NewColonyWriteTask task = new NewColonyWriteTask(view.getContext());
-				task.execute(new Params(colonies, new File(Storage.getMemoryCard().getAbsolutePath() + "/new_colonies.csv")));
-			}
-		});
+        final Button exportButton = (Button) view.findViewById(R.id.save_new_colonies_button);
+        exportButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final NewColonyWriteTask task = new NewColonyWriteTask(view.getContext());
+                task.execute(new Params(colonies,
+                        new File(Storage.getMemoryCard().getAbsolutePath() + "/new_colonies.csv")));
+            }
+        });
 
-		builder.setPositiveButton(R.string.save_action, new OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
+        builder.setPositiveButton(R.string.save_action, new OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
 
-			}
-		});
+            }
+        });
 
 
-		return builder.create();
-	}
+        return builder.create();
+    }
 
-	private static class NewColonyAdapter implements ListAdapter {
+    private static class NewColonyAdapter implements ListAdapter {
 
-		private final NewColony[] colonies;
+        private final NewColony[] colonies;
 
-		public NewColonyAdapter(NewColony[] colonies) {
-			this.colonies = colonies;
-		}
+        public NewColonyAdapter(NewColony[] colonies) {
+            this.colonies = colonies;
+        }
 
-		@Override
-		public void registerDataSetObserver(DataSetObserver observer) {
-			// Nothing
-		}
+        @Override
+        public void registerDataSetObserver(DataSetObserver observer) {
+            // Nothing
+        }
 
-		@Override
-		public void unregisterDataSetObserver(DataSetObserver observer) {
-			// Nothing
-		}
+        @Override
+        public void unregisterDataSetObserver(DataSetObserver observer) {
+            // Nothing
+        }
 
-		@Override
-		public int getCount() {
-			return colonies.length;
-		}
+        @Override
+        public int getCount() {
+            return colonies.length;
+        }
 
-		@Override
-		public Object getItem(int position) {
-			return colonies[position];
-		}
+        @Override
+        public Object getItem(int position) {
+            return colonies[position];
+        }
 
-		@Override
-		public long getItemId(int position) {
-			return colonies[position].getID();
-		}
+        @Override
+        public long getItemId(int position) {
+            return colonies[position].getID();
+        }
 
-		@Override
-		public boolean hasStableIds() {
-			return true;
-		}
+        @Override
+        public boolean hasStableIds() {
+            return true;
+        }
 
-		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			final NewColony colony = colonies[position];
-			if(convertView != null && convertView instanceof EditText) {
-				((TextView) convertView).setText(colony.toString());
-				return convertView;
-			}
-			else {
-				final TextView view = new TextView(parent.getContext());
-				view.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-				view.setPadding(10, 10, 10, 10);
-				view.setText(colony.toString());
-				return view;
-			}
-		}
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            final NewColony colony = colonies[position];
+            if (convertView != null && convertView instanceof EditText) {
+                ((TextView) convertView).setText(colony.toString());
+                return convertView;
+            } else {
+                final TextView view = new TextView(parent.getContext());
+                view.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+                view.setPadding(10, 10, 10, 10);
+                view.setText(colony.toString());
+                return view;
+            }
+        }
 
-		@Override
-		public int getItemViewType(int position) {
-			return 0;
-		}
+        @Override
+        public int getItemViewType(int position) {
+            return 0;
+        }
 
-		@Override
-		public int getViewTypeCount() {
-			return 1;
-		}
+        @Override
+        public int getViewTypeCount() {
+            return 1;
+        }
 
-		@Override
-		public boolean isEmpty() {
-			return colonies.length == 0;
-		}
+        @Override
+        public boolean isEmpty() {
+            return colonies.length == 0;
+        }
 
-		@Override
-		public boolean areAllItemsEnabled() {
-			return true;
-		}
+        @Override
+        public boolean areAllItemsEnabled() {
+            return true;
+        }
 
-		@Override
-		public boolean isEnabled(int position) {
-			return true;
-		}
-	}
+        @Override
+        public boolean isEnabled(int position) {
+            return true;
+        }
+    }
 }

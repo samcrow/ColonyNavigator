@@ -13,74 +13,77 @@ import java.io.PrintStream;
 
 /**
  * Parses CSV files
+ *
  * @author Sam Crow
  */
 public class CSVFileParser extends CSVParser implements FileParser {
 
-	protected File file;
+    protected File file;
 
-	/**
-	 * Constructor
-	 * @param file The file to read from and write to
-	 */
-	public CSVFileParser(File file) {
-		this.file = file;
-	}
+    /**
+     * Constructor
+     *
+     * @param file The file to read from and write to
+     */
+    public CSVFileParser(File file) {
+        this.file = file;
+    }
 
-	@Override
-	public ColonySet parse() throws  IOException {
+    @Override
+    public ColonySet parse() throws IOException {
 
-		ColonySet colonies = new ColonySet();
+        ColonySet colonies = new ColonySet();
 
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+        try {
+            BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(new FileInputStream(file)));
 
-			//Parse each line
-			while(true) {
-				String line = reader.readLine();
-				if(line == null) {
-					break;
-				}
+            //Parse each line
+            while (true) {
+                String line = reader.readLine();
+                if (line == null) {
+                    break;
+                }
 
-				Colony colony = parseOne(line);
-				//colony might be null if the line couldn't be parsed.
-				//Add it only if it was parsed successfully.
-				if(colony != null) {
-					colonies.put(colony);
-				}
+                Colony colony = parseOne(line);
+                //colony might be null if the line couldn't be parsed.
+                //Add it only if it was parsed successfully.
+                if (colony != null) {
+                    colonies.put(colony);
+                }
 
-			}
+            }
 
-			reader.close();
-		} catch (FileNotFoundException e) {
-			throw new IOException(e);
-		}
+            reader.close();
+        } catch (FileNotFoundException e) {
+            throw new IOException(e);
+        }
 
-		return colonies;
-	}
+        return colonies;
+    }
 
-	@Override
-	public void write(Iterable<? extends Colony> values) throws  IOException {
-		//Delete the file, if it exists, so that it can be rewritten from the beginning
-		final boolean deleteSuccess = file.delete();
-		if(!deleteSuccess) {
-			throw new IOException("Could not delete file");
-		}
-		file.createNewFile();
+    @Override
+    public void write(Iterable<? extends Colony> values) throws IOException {
+        //Delete the file, if it exists, so that it can be rewritten from the beginning
+        final boolean deleteSuccess = file.delete();
+        if (!deleteSuccess) {
+            throw new IOException("Could not delete file");
+        }
+        file.createNewFile();
 
-		try {
-			PrintStream stream = new PrintStream(file);
+        try {
+            PrintStream stream = new PrintStream(file);
 
-			for(Colony colony : values) {
-				stream.println(encodeOne(colony));
-			}
+            for (Colony colony : values) {
+                stream.println(encodeOne(colony));
+            }
 
-			stream.close();
+            stream.close();
 
-		} catch (FileNotFoundException e) {
-			throw new IOException(e);
-		}
+        } catch (FileNotFoundException e) {
+            throw new IOException(e);
+        }
 
-	}
+    }
 
 }

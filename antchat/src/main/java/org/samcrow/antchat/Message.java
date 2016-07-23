@@ -7,37 +7,36 @@ import org.joda.time.DateTime;
  */
 public class Message {
 
-	public static enum Direction {
-		Received,
-		Sent,
-	}
+    /**
+     * The text in the message
+     */
+    private final String text;
+    /**
+     * The time the message was sent or received
+     */
+    private final DateTime time;
+    private final Direction direction;
 
-	/**
-	 * The text in the message
-	 */
-	private final String text;
-	/**
-	 * The time the message was sent or received
-	 */
-	private final DateTime time;
+    public Message(String text, DateTime time, Direction direction) {
+        this.text = text;
+        this.time = time;
+        this.direction = direction;
+    }
 
-	private final Direction direction;
+    public String getText() {
+        return text;
+    }
 
-	public Message(String text, DateTime time, Direction direction) {
-		this.text = text;
-		this.time = time;
-		this.direction = direction;
-	}
+    public DateTime getTime() {
+        return time;
+    }
 
-	public String getText() {
-		return text;
-	}
+    public Direction getDirection() {
+        return direction;
+    }
 
-	public DateTime getTime() {
-		return time;
-	}
-
-	public Direction getDirection() {
-		return direction;
-	}
+    public static enum Direction {
+        Received,
+        Sent,
+    }
 }

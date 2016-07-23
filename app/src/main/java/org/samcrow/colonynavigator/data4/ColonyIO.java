@@ -13,7 +13,8 @@ import java.util.Map;
  * Provides utilities for colony reading/writing
  */
 public class ColonyIO {
-    private ColonyIO() {}
+    private ColonyIO() {
+    }
 
     public static JSONObject attributesToJSON(Map<String, Object> attributes) {
         return new JSONObject(attributes);
@@ -22,9 +23,9 @@ public class ColonyIO {
     public static Map<String, Object> jsonToAttributes(JSONObject json) {
         final Map<String, Object> map = new HashMap<>(json.length());
 
-        for(Iterator<String> iter = json.keys(); iter.hasNext(); ) {
+        for (Iterator<String> iter = json.keys(); iter.hasNext(); ) {
             final String key = iter.next();
-            if(!json.isNull(key)) {
+            if (!json.isNull(key)) {
                 final Object value = json.opt(key);
                 if (value instanceof JSONObject) {
                     map.put(key, jsonToAttributes((JSONObject) value));
@@ -41,8 +42,8 @@ public class ColonyIO {
 
     public static List<Object> jsonToAttributes(JSONArray json) {
         final List<Object> list = new ArrayList<>(json.length());
-        for(int i = 0; i < json.length(); i++) {
-            if(!json.isNull(i)) {
+        for (int i = 0; i < json.length(); i++) {
+            if (!json.isNull(i)) {
                 final Object value = json.opt(i);
                 if (value instanceof JSONObject) {
                     list.add(jsonToAttributes((JSONObject) value));

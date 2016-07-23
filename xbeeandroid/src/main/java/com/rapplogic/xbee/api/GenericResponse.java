@@ -1,18 +1,18 @@
 /**
  * Copyright (c) 2008 Andrew Rapp. All rights reserved.
- *  
+ * <p/>
  * This file is part of XBee-API.
- *  
+ * <p/>
  * XBee-API is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *  
+ * <p/>
  * XBee-API is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *  
+ * <p/>
  * You should have received a copy of the GNU General Public License
  * along with XBee-API.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -28,25 +28,25 @@ import java.io.IOException;
  *
  */
 public class GenericResponse extends XBeeResponse {
-		
-	private int genericApiId;
 
-	public GenericResponse() {
+    private int genericApiId;
 
-	}
-	
-	public int getGenericApiId() {
-		return genericApiId;
-	}
+    public GenericResponse() {
 
-	public void setGenericApiId(int genericApiId) {
-		this.genericApiId = genericApiId;
-	}
-	
-	public void parse(IPacketParser parser) throws IOException {
-		//eat packet bytes -- they will be save to bytearray and stored in response
-		parser.readRemainingBytes();
-		// TODO gotta save it because it isn't know to the enum apiId won't
-		this.setGenericApiId(parser.getIntApiId());		
-	}
+    }
+
+    public int getGenericApiId() {
+        return genericApiId;
+    }
+
+    public void setGenericApiId(int genericApiId) {
+        this.genericApiId = genericApiId;
+    }
+
+    public void parse(IPacketParser parser) throws IOException {
+        //eat packet bytes -- they will be save to bytearray and stored in response
+        parser.readRemainingBytes();
+        // TODO gotta save it because it isn't know to the enum apiId won't
+        this.setGenericApiId(parser.getIntApiId());
+    }
 }

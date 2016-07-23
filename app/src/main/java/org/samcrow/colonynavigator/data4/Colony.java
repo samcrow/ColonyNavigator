@@ -14,27 +14,20 @@ public class Colony extends Positioned {
 
 
     /**
-     * A listener that can be notified when a colony's drawable changes
-     *
-     * @author samcrow
-     *
+     * The colony's identifier
      */
-    public interface ColonyChangeListener {
-        void onColonyChanged();
-    }
-
-    /** The colony's identifier */
     private final String id;
-
-    /** The time this colony was updated */
+    /**
+     * The time this colony was updated
+     */
     private DateTime updateTime;
-
     /**
      * The attributes of this colony
      */
     private Map<String, Object> attributes;
-
-    /** The change listener */
+    /**
+     * The change listener
+     */
     private transient ColonyChangeListener listener = null;
 
     public Colony(String id) {
@@ -67,17 +60,18 @@ public class Colony extends Positioned {
         notifyChanged();
     }
 
+    public DateTime getUpdateTime() {
+        return updateTime;
+    }
+
     /**
      * Sets the update time of the colony
+     *
      * @param newTime the update time
      */
     public void setUpdateTime(DateTime newTime) {
         notifyChanged();
         updateTime = newTime;
-    }
-
-    public DateTime getUpdateTime() {
-        return updateTime;
     }
 
     /**
@@ -89,6 +83,7 @@ public class Colony extends Positioned {
 
     /**
      * Gets an attribute of this colony
+     *
      * @param attributeName the name of the attribute
      * @return the specified attribute, or null if this colony
      * does not have the specified attribute
@@ -100,33 +95,32 @@ public class Colony extends Positioned {
     /**
      * Gets an attribute of this colony, returning a default value if this colony does not have
      * the requested attribute
+     *
      * @param attributeName the name of the attribute
-     * @param defaultValue the value to return if this colony does not have the requested attribute
-     * @param <T> the type of the attribute
+     * @param defaultValue  the value to return if this colony does not have the requested attribute
+     * @param <T>           the type of the attribute
      * @return the value of the requested property, or defaultValue if this colony does not have
      * the requested attribute or the value of the attribute cannot be cast to T
      */
     @SuppressWarnings("unchecked")
     public <T> T getAttribute(String attributeName, T defaultValue) {
         final Object mapValue = attributes.get(attributeName);
-        if(mapValue != null) {
+        if (mapValue != null) {
             try {
                 return (T) mapValue;
-            }
-            catch (ClassCastException e) {
+            } catch (ClassCastException e) {
                 return defaultValue;
             }
-        }
-        else {
+        } else {
             return defaultValue;
         }
     }
 
     public void setAttribute(String name, Object value) {
-        if(name == null) {
+        if (name == null) {
             throw new NullPointerException("name must not be null");
         }
-        if(value == null) {
+        if (value == null) {
             throw new NullPointerException("value must not be null");
         }
         markUpdated();
@@ -142,15 +136,15 @@ public class Colony extends Positioned {
         return Collections.unmodifiableSet(attributes.keySet());
     }
 
+    public Map<String, Object> getAttributes() {
+        return new HashMap<>(attributes);
+    }
+
     public void setAttributes(Map<String, Object> attrs) {
         markUpdated();
         notifyChanged();
         attributes = new HashMap<>(attrs);
     }
-    public Map<String, Object> getAttributes() {
-        return new HashMap<>(attributes);
-    }
-
 
     /**
      * Notifies the listener that something has changed
@@ -160,8 +154,18 @@ public class Colony extends Positioned {
             listener.onColonyChanged();
         }
     }
+
     public void setOnChange(
             ColonyChangeListener changelistener) {
         listener = changelistener;
+    }
+
+    /**
+     * A listener that can be notified when a colony's drawable changes
+     *
+     * @author samcrow
+     */
+    public interface ColonyChangeListener {
+        void onColonyChanged();
     }
 }

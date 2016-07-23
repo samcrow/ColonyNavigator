@@ -4,9 +4,13 @@ package org.samcrow.colonynavigator.data4;
  * A base class for something with a position on the site
  */
 public class Positioned {
-    /** The X-coordinate in meters east of the southwest corner */
+    /**
+     * The X-coordinate in meters east of the southwest corner
+     */
     private double x;
-    /** The Y-coordinate in meters north of the southwest corner */
+    /**
+     * The Y-coordinate in meters north of the southwest corner
+     */
     private double y;
 
     public Positioned(double x, double y) {

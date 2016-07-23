@@ -51,6 +51,15 @@ public class RouteLineLayer extends Polyline {
         setVisible(false);
     }
 
+    private static Paint getPaint() {
+        Paint paint = AndroidGraphicFactory.INSTANCE.createPaint();
+        paint.setColor(Color.RED);
+        paint.setStrokeWidth(4);
+        paint.setStyle(Style.STROKE);
+
+        return paint;
+    }
+
     public void setDestination(LatLong destination) {
         this.destination = destination;
         updatePositions();
@@ -88,14 +97,5 @@ public class RouteLineLayer extends Polyline {
 
     private void setEndPoint(LatLong point) {
         getLatLongs().set(1, point);
-    }
-
-    private static Paint getPaint() {
-        Paint paint = AndroidGraphicFactory.INSTANCE.createPaint();
-        paint.setColor(Color.RED);
-        paint.setStrokeWidth(4);
-        paint.setStyle(Style.STROKE);
-
-        return paint;
     }
 }

@@ -9,39 +9,40 @@ import org.samcrow.colonynavigator.CoordinateTransformer;
 import org.samcrow.colonynavigator.data4.Colony;
 
 public class ColonyMarker extends Marker {
-	
-	private Colony colony;
 
-	public ColonyMarker(Colony colony, CoordinateTransformer transformer) {
-		super(transformer.toGps((float) colony.getX(), (float) colony.getY()), bitmapForColony(colony), 0, 0);
-		
-		// Not memory-optimal:
-		// Create a new drawable to find the correct offsets
-		setHorizontalOffset(new ColonyDrawable(colony).getXOffset());
-		
-		this.colony = colony;
-		
-		// Change the bitmap when the colony's drawable changes
-		colony.setOnChange(new Colony.ColonyChangeListener() {
-			@Override
-			public void onColonyChanged() {
-				setBitmap(bitmapForColony(ColonyMarker.this.colony));
-			}
-		});
-	}
-	
-	@Override
-	public boolean onTap(LatLong tapLatLong, Point layerXY, Point tapXY) {
-		
-		// Check if this colony was tapped
-		// TODO
-		
-		return false;
-	}
-	
-	private static Bitmap bitmapForColony(Colony colony) {
-		final ColonyDrawable drawable = new ColonyDrawable(colony);
-		return AndroidGraphicFactory.convertToBitmap(drawable);
-	}
+    private Colony colony;
+
+    public ColonyMarker(Colony colony, CoordinateTransformer transformer) {
+        super(transformer.toGps((float) colony.getX(), (float) colony.getY()),
+                bitmapForColony(colony), 0, 0);
+
+        // Not memory-optimal:
+        // Create a new drawable to find the correct offsets
+        setHorizontalOffset(new ColonyDrawable(colony).getXOffset());
+
+        this.colony = colony;
+
+        // Change the bitmap when the colony's drawable changes
+        colony.setOnChange(new Colony.ColonyChangeListener() {
+            @Override
+            public void onColonyChanged() {
+                setBitmap(bitmapForColony(ColonyMarker.this.colony));
+            }
+        });
+    }
+
+    private static Bitmap bitmapForColony(Colony colony) {
+        final ColonyDrawable drawable = new ColonyDrawable(colony);
+        return AndroidGraphicFactory.convertToBitmap(drawable);
+    }
+
+    @Override
+    public boolean onTap(LatLong tapLatLong, Point layerXY, Point tapXY) {
+
+        // Check if this colony was tapped
+        // TODO
+
+        return false;
+    }
 
 }

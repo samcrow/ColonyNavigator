@@ -35,87 +35,86 @@ import java.io.OutputStream;
  */
 public class SerialPortConnection implements XBeeConnection {
 
-	private final static Logger log = Logger.getLogger(SerialPortConnection.class);
+    private final static Logger log = Logger.getLogger(SerialPortConnection.class);
 
-	private InputStream inputStream;
-	private OutputStream outputStream;
+    private InputStream inputStream;
+    private OutputStream outputStream;
 
-	private FT_Device serialPort;
+    private FT_Device serialPort;
 
-	private Notifier notifier;
+    private Notifier notifier;
 
-	public SerialPortConnection() {
+    public SerialPortConnection() {
 
-	}
+    }
 
-	public void openSerialPort(FT_Device device) {
-		serialPort = device;
+    public void openSerialPort(FT_Device device) {
+        serialPort = device;
 
-		inputStream = new FTDIInputStream(serialPort);
-		outputStream = new BufferedOutputStream(new FTDIOutputStream(serialPort));
+        inputStream = new FTDIInputStream(serialPort);
+        outputStream = new BufferedOutputStream(new FTDIOutputStream(serialPort));
 
-		notifier = new Notifier();
-		notifier.start();
-	}
+        notifier = new Notifier();
+        notifier.start();
+    }
 
-	/**
-	 * Shuts down the serial connection
-	 */
-	@Override
-	public void close() throws IOException {
-		notifier.interrupt();
-		try {
-			notifier.join();
-		} catch (InterruptedException e) {
-			log.error("Interrupted while joining serial notifier thread", e);
-		}
-		serialPort.close();
-	}
+    /**
+     * Shuts down the serial connection
+     */
+    @Override
+    public void close() throws IOException {
+        notifier.interrupt();
+        try {
+            notifier.join();
+        } catch (InterruptedException e) {
+            log.error("Interrupted while joining serial notifier thread", e);
+        }
+        serialPort.close();
+    }
 
-	public OutputStream getOutputStream() {
-		return outputStream;
-	}
+    public OutputStream getOutputStream() {
+        return outputStream;
+    }
 
-	public InputStream getInputStream() {
-		return inputStream;
-	}
+    public InputStream getInputStream() {
+        return inputStream;
+    }
 
-	public void serialEvent() {
+    public void serialEvent() {
 
-		try {
-			if (this.getInputStream().available() > 0) {
-				try {
-					log.debug("serialEvent: " + serialPort.getQueueStatus() + " bytes available");
+        try {
+            if (this.getInputStream().available() > 0) {
+                try {
+                    log.debug("serialEvent: " + serialPort.getQueueStatus() + " bytes available");
 
-					synchronized (this) {
-						this.notify();
-					}
-				} catch (Exception e) {
-					log.error("Error in handleSerialData method", e);
-				}
-			} else {
-				log.warn("We were notified of new data but available() is returning 0");
-			}
-		} catch (IOException ex) {
-			// it's best not to throw the exception because the RXTX thread may not be prepared to handle
-			log.error("RXTX error in serialEvent method", ex);
-		}
-	}
+                    synchronized (this) {
+                        this.notify();
+                    }
+                } catch (Exception e) {
+                    log.error("Error in handleSerialData method", e);
+                }
+            } else {
+                log.warn("We were notified of new data but available() is returning 0");
+            }
+        } catch (IOException ex) {
+            // it's best not to throw the exception because the RXTX thread may not be prepared to handle
+            log.error("RXTX error in serialEvent method", ex);
+        }
+    }
 
-	private class Notifier extends Thread {
-		@Override
-		public void run() {
-			try {
-				while (!isInterrupted()) {
-					if (serialPort.getQueueStatus() > 0) {
-						serialEvent();
-					}
-					sleep(100);
-				}
-			}
-			catch (InterruptedException e) {
-				// Return
-			}
-		}
-	}
+    private class Notifier extends Thread {
+        @Override
+        public void run() {
+            try {
+                while (!isInterrupted()) {
+                    if (serialPort.getQueueStatus() > 0) {
+                        serialEvent();
+                    }
+                    sleep(100);
+                }
+            } catch (InterruptedException e) {
+                // Return
+            }
+        }
+    }
 }

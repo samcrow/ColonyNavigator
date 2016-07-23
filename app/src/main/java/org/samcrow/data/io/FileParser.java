@@ -13,25 +13,28 @@ import java.util.Set;
  * It is suggested that classes implementing this interface
  * have a constructor that takes a {@link File} as an argument
  * to specify the file that should be read from and written to.
+ *
  * @author Sam Crow
  */
 public interface FileParser extends Parser<Colony> {
 
-	/**
-	 * Parse the data source into a set of objects.
-	 * Implementations of this method should try to
-	 * ignore any syntax errors and continue parsing
-	 * the valid parts of the source. If parsing
-	 * fails entirely, this method should return an
-	 * empty {@link Set}.
-	 * @return The colonies
-	 */
-	ColonySet parse() throws IOException;
+    /**
+     * Parse the data source into a set of objects.
+     * Implementations of this method should try to
+     * ignore any syntax errors and continue parsing
+     * the valid parts of the source. If parsing
+     * fails entirely, this method should return an
+     * empty {@link Set}.
+     *
+     * @return The colonies
+     */
+    ColonySet parse() throws IOException;
 
-	/**
-	 * Write all of a set of objects to the data source
-	 * @param values The colonies to write
-	 */
-	void write(Iterable<? extends Colony> values) throws IOException;
+    /**
+     * Write all of a set of objects to the data source
+     *
+     * @param values The colonies to write
+     */
+    void write(Iterable<? extends Colony> values) throws IOException;
 
 }

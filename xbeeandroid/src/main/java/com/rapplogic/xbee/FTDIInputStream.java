@@ -1,7 +1,5 @@
 package com.rapplogic.xbee;
 
-import android.util.Log;
-
 import com.ftdi.j2xx.FT_Device;
 
 import java.io.IOException;

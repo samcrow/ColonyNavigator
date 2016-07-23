@@ -49,6 +49,7 @@ public class Digest {
             e.printStackTrace();
         }
     }
+
     public void update(short value) {
         try {
             // Convert the object to bytes
@@ -62,6 +63,7 @@ public class Digest {
             e.printStackTrace();
         }
     }
+
     public void update(int value) {
         try {
             // Convert the object to bytes
@@ -75,6 +77,7 @@ public class Digest {
             e.printStackTrace();
         }
     }
+
     public void update(long value) {
         try {
             // Convert the object to bytes
@@ -91,6 +94,7 @@ public class Digest {
 
     /**
      * Returns the bytes of the message digest of all the provided objects
+     *
      * @return
      */
     public byte[] digest() {

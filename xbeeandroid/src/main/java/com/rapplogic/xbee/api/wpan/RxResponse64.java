@@ -1,28 +1,28 @@
 /**
  * Copyright (c) 2008 Andrew Rapp. All rights reserved.
- *  
+ * <p/>
  * This file is part of XBee-API.
- *  
+ * <p/>
  * XBee-API is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *  
+ * <p/>
  * XBee-API is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *  
+ * <p/>
  * You should have received a copy of the GNU General Public License
  * along with XBee-API.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.rapplogic.xbee.api.wpan;
 
-import java.io.IOException;
-
 import com.rapplogic.xbee.api.IPacketParser;
 import com.rapplogic.xbee.api.XBeeAddress64;
+
+import java.io.IOException;
 
 /**
  * Series 1 XBee. 64-bit address Receive packet.
@@ -32,18 +32,18 @@ import com.rapplogic.xbee.api.XBeeAddress64;
  * Note: MY address must be set to 0xffff to receive this packet type.
  * <p/>
  * API ID: 0x80
- * 
+ *
  * @author andrew
  */
 public class RxResponse64 extends RxResponse {
-	
-	public XBeeAddress64 getRemoteAddress() {
-		return (XBeeAddress64) this.getSourceAddress();
-	}
-	
-	public void parse(IPacketParser parser) throws IOException {
-		this.setSourceAddress(parser.parseAddress64());	
-		super.parseBase(parser);
-		super.parse(parser);
-	}	
+
+    public XBeeAddress64 getRemoteAddress() {
+        return (XBeeAddress64) this.getSourceAddress();
+    }
+
+    public void parse(IPacketParser parser) throws IOException {
+        this.setSourceAddress(parser.parseAddress64());
+        super.parseBase(parser);
+        super.parse(parser);
+    }
 }

@@ -17,14 +17,18 @@ public class FTDIOutputStream extends OutputStream {
 
     /**
      * Creates an output stream
+     *
      * @param device the device to wrap
      */
     public FTDIOutputStream(FT_Device device) {
         this.device = device;
     }
+
     @Override
     public void write(int oneByte) throws IOException {
-        if (!device.isOpen()) throw new AssertionError("Device not open");
+        if (!device.isOpen()) {
+            throw new AssertionError("Device not open");
+        }
         synchronized (device) {
             device.write(new byte[]{(byte) oneByte});
         }
@@ -32,6 +36,7 @@ public class FTDIOutputStream extends OutputStream {
 
     /**
      * Closes the connection to the FTDI device
+     *
      * @throws IOException
      */
     @Override
@@ -45,7 +50,9 @@ public class FTDIOutputStream extends OutputStream {
 
     @Override
     public void write(byte[] buffer) throws IOException {
-        if (!device.isOpen()) throw new AssertionError("Device not open");
+        if (!device.isOpen()) {
+            throw new AssertionError("Device not open");
+        }
         synchronized (device) {
             device.write(buffer);
         }

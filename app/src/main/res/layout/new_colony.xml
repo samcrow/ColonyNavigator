@@ -1,55 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="10dp">
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:padding="10dp">
 
     <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:orientation="horizontal"
         android:padding="10dp">
 
         <TextView
+            android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="@string/name"
-            android:id="@+id/textView" />
+            android:textAppearance="?android:attr/textAppearanceLarge"/>
 
         <EditText
+            android:id="@+id/new_colony_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:id="@+id/new_colony_name"
             android:layout_weight="1"
             android:editable="true"
             android:enabled="true"
             android:focusable="true"
             android:focusableInTouchMode="true"
-            android:inputType="text|textCapWords" />
+            android:inputType="text|textCapWords"/>
     </LinearLayout>
 
     <TextView
+        android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/notes"
-        android:id="@+id/textView2"
         android:layout_gravity="center_horizontal"
-        android:layout_margin="5dp" />
+        android:layout_margin="5dp"
+        android:text="@string/notes"
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <EditText
+        android:id="@+id/new_colony_notes"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:inputType="textShortMessage|textMultiLine"
-        android:ems="10"
-        android:id="@+id/new_colony_notes"
         android:layout_gravity="center_vertical"
         android:editable="true"
+        android:ems="10"
         android:enabled="true"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:minLines="2" />
+        android:inputType="textShortMessage|textMultiLine"
+        android:minLines="2"/>
 
 </LinearLayout>

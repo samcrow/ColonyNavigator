@@ -56,404 +56,399 @@ import java.util.List;
  * The main activity
  */
 public class MainActivity extends Activity implements
-		OnSharedPreferenceChangeListener, ColonyEditDialogFragment.ColonyChangeListener,
-		NewColonyDialogFragment.NewColonyListener {
+        OnSharedPreferenceChangeListener, ColonyEditDialogFragment.ColonyChangeListener,
+        NewColonyDialogFragment.NewColonyListener {
 
-	/**
-	 * The initial position of the map
-	 */
-	private static final MapPosition START_POSITION = new MapPosition(
-			new LatLong(31.872176, -109.040983), (byte) 17);
+    /**
+     * The initial position of the map
+     */
+    private static final MapPosition START_POSITION = new MapPosition(
+            new LatLong(31.872176, -109.040983), (byte) 17);
+    private static final DialogInterface.OnClickListener DIALOG_CLICK_NOOP = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface arg0, int arg1) {
 
-	private PreferencesFacade preferencesFacade;
+        }
+    };
+    private PreferencesFacade preferencesFacade;
+    private MapView mapView;
+    private LayerManager layerManager;
+    private NotifyingMyLocationOverlay locationOverlay;
+    private ColonyProvider provider;
+    private ColonySet colonies;
+    private NewColonyDatabase newColonyDB;
+    /**
+     * The current selected colony
+     */
+    private ColonySelection selection = new ColonySelection();
 
-	private MapView mapView;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-	private LayerManager layerManager;
-	
-	private NotifyingMyLocationOverlay locationOverlay;
+        try {
+            // Set up GraphicFactory
+            AndroidGraphicFactory.createInstance(getApplication());
 
-	private ColonyProvider provider;
+            createSharedPreferences();
 
-	private ColonySet colonies;
+            setContentView(R.layout.activity_main);
 
-	private NewColonyDatabase newColonyDB;
+            setTitle("Map");
 
-	/**
-	 * The current selected colony
-	 */
-	private ColonySelection selection = new ColonySelection();
+            setUpMap();
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+            // Add colonies
+            provider = new MemoryCardDataProvider(this, Storage.getMemoryCard());
 
-		try {
-			// Set up GraphicFactory
-			AndroidGraphicFactory.createInstance(getApplication());
+            final CoordinateTransformer transformer = CoordinateTransformer.getInstance();
+            colonies = provider.getColonies();
+            for (Colony colony : colonies) {
+                layerManager.getLayers().add(new ColonyMarker(colony, transformer));
+            }
 
-			createSharedPreferences();
+            // Add layers above colonies
 
-			setContentView(R.layout.activity_main);
+            // Location layer
+            setUpLocationOverlay();
+            // Route line layer
+            setUpRouteLine();
 
-			setTitle("Map");
+            // New colonies
+            newColonyDB = new NewColonyDatabase(this);
 
-			setUpMap();
+        } catch (Exception ex) {
+            // Show a dialog, then quit
+            new AlertDialog.Builder(MainActivity.this)
+                    .setTitle(ex.getClass().getSimpleName())
+                    .setMessage(ex.getMessage())
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setNeutralButton("Quit", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            // Close this activity
+                            MainActivity.this.finish();
+                        }
+                    })
+                    .show();
+        }
 
-			// Add colonies
-			provider = new MemoryCardDataProvider(this, Storage.getMemoryCard());
+    }
 
-			final CoordinateTransformer transformer = CoordinateTransformer.getInstance();
-			colonies = provider.getColonies();
-			for (Colony colony : colonies) {
-				layerManager.getLayers().add(new ColonyMarker(colony, transformer));
-			}
+    private void setUpMap() {
 
-			// Add layers above colonies
+        mapView = new ColonyMapView(this);
 
-			// Location layer
-			setUpLocationOverlay();
-			// Route line layer
-			setUpRouteLine();
-
-			// New colonies
-			newColonyDB = new NewColonyDatabase(this);
-
-		} catch (Exception ex) {
-			// Show a dialog, then quit
-			new AlertDialog.Builder(MainActivity.this)
-					.setTitle(ex.getClass().getSimpleName())
-					.setMessage(ex.getMessage())
-					.setIcon(android.R.drawable.ic_dialog_alert)
-					.setNeutralButton("Quit", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							// Close this activity
-							MainActivity.this.finish();
-						}
-					})
-					.show();
-		}
-
-	}
-
-	private void setUpMap() {
-
-		mapView = new ColonyMapView(this);
-
-		Model model = mapView.getModel();
-		model.init(this.preferencesFacade);
+        Model model = mapView.getModel();
+        model.init(this.preferencesFacade);
 
 
-		// Put the map view in the layout
-		FrameLayout layout = (FrameLayout) findViewById(R.id.map_view_frame);
-		layout.addView(mapView);
+        // Put the map view in the layout
+        FrameLayout layout = (FrameLayout) findViewById(R.id.map_view_frame);
+        layout.addView(mapView);
 
-		// Create a tile cache
-		TileCache tileCache = AndroidUtil.createTileCache(this, getPersistableId(),
-				mapView.getModel().displayModel.getTileSize(),
-				getScreenRatio(),
-				mapView.getModel().frameBufferModel.getOverdrawFactor());
+        // Create a tile cache
+        TileCache tileCache = AndroidUtil.createTileCache(this, getPersistableId(),
+                mapView.getModel().displayModel.getTileSize(),
+                getScreenRatio(),
+                mapView.getModel().frameBufferModel.getOverdrawFactor());
 
-		layerManager = mapView.getLayerManager();
+        layerManager = mapView.getLayerManager();
 
-		try {
-			// Create a tile layer for OpenStreetMap data
-			TileRendererLayer tileRendererLayer = createTileRendererLayer(
-					tileCache,
-					initializePosition(mapView.getModel().mapViewPosition),
-					InternalRenderTheme.OSMARENDER, false);
+        try {
+            // Create a tile layer for OpenStreetMap data
+            TileRendererLayer tileRendererLayer = createTileRendererLayer(
+                    tileCache,
+                    initializePosition(mapView.getModel().mapViewPosition),
+                    InternalRenderTheme.OSMARENDER, false);
 
-			layerManager.getLayers().add(tileRendererLayer);
-		}
-		catch (IOException e) {
-			new AlertDialog.Builder(MainActivity.this)
-					.setTitle("Failed to open map file")
-					.setMessage(e.getMessage())
-					.setIcon(android.R.drawable.ic_dialog_alert)
-					.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
-		}
-		mapView.getModel().mapViewPosition.setMapPosition(START_POSITION);
-	}
-	
-	private void setUpRouteLine() {
-		final RouteLineLayer route = new RouteLineLayer(locationOverlay);
-		selection.addChangeListener(new ColonySelection.Listener() {
-			@Override
-			public void selectedColonyChanged(Colony oldColony, Colony newColony) {
-				route.setDestination(CoordinateTransformer.getInstance().toGps((float) newColony.getX(), (float) newColony.getY()));
-			}
-		});
-		layerManager.getLayers().add(route);
-	}
-	
-	private void setUpLocationOverlay() {
-		locationOverlay = new NotifyingMyLocationOverlay(this,
-				mapView.getModel().mapViewPosition,
-				AndroidGraphicFactory.convertToBitmap(getMyLocationDrawable()));
-		layerManager.getLayers().add(locationOverlay);
-		// locationOverlay.enableMyLocation() gets called in onResume().
-	}
+            layerManager.getLayers().add(tileRendererLayer);
+        } catch (IOException e) {
+            new AlertDialog.Builder(MainActivity.this)
+                    .setTitle("Failed to open map file")
+                    .setMessage(e.getMessage())
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
+        }
+        mapView.getModel().mapViewPosition.setMapPosition(START_POSITION);
+    }
 
-	private MapViewPosition initializePosition(MapViewPosition mvp) {
-		LatLong center = mvp.getCenter();
+    private void setUpRouteLine() {
+        final RouteLineLayer route = new RouteLineLayer(locationOverlay);
+        selection.addChangeListener(new ColonySelection.Listener() {
+            @Override
+            public void selectedColonyChanged(Colony oldColony, Colony newColony) {
+                route.setDestination(CoordinateTransformer.getInstance()
+                        .toGps((float) newColony.getX(), (float) newColony.getY()));
+            }
+        });
+        layerManager.getLayers().add(route);
+    }
 
-		if (center.equals(new LatLong(0, 0))) {
-			mvp.setMapPosition(START_POSITION);
-		}
-		return mvp;
-	}
+    private void setUpLocationOverlay() {
+        locationOverlay = new NotifyingMyLocationOverlay(this,
+                mapView.getModel().mapViewPosition,
+                AndroidGraphicFactory.convertToBitmap(getMyLocationDrawable()));
+        layerManager.getLayers().add(locationOverlay);
+        // locationOverlay.enableMyLocation() gets called in onResume().
+    }
 
-	private void createSharedPreferences() {
-		SharedPreferences sp = this.getSharedPreferences(getPersistableId(),
-				MODE_PRIVATE);
-		this.preferencesFacade = new AndroidPreferences(sp);
-	}
+    private MapViewPosition initializePosition(MapViewPosition mvp) {
+        LatLong center = mvp.getCenter();
 
-	/**
-	 * @return the id that is used to save this mapview
-	 */
-	private String getPersistableId() {
-		return this.getClass().getSimpleName();
-	}
+        if (center.equals(new LatLong(0, 0))) {
+            mvp.setMapPosition(START_POSITION);
+        }
+        return mvp;
+    }
 
-	/**
-	 * @return the screen ratio that the mapview takes up (for cache
-	 *         calculation)
-	 */
-	private float getScreenRatio() {
-		return 1.0f;
-	}
+    private void createSharedPreferences() {
+        SharedPreferences sp = this.getSharedPreferences(getPersistableId(),
+                MODE_PRIVATE);
+        this.preferencesFacade = new AndroidPreferences(sp);
+    }
 
-	private TileRendererLayer createTileRendererLayer(
-			TileCache tileCache, MapViewPosition mapViewPosition,
-			XmlRenderTheme renderTheme, boolean hasAlpha) throws IOException {
-		TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, new MapFile(Storage.getResourceAsFile(this, R.raw.site)), mapViewPosition, hasAlpha, true, AndroidGraphicFactory.INSTANCE);
-		tileRendererLayer.setXmlRenderTheme(renderTheme);
-		tileRendererLayer.setTextScale(1.5f);
-		return tileRendererLayer;
-	}
+    /**
+     * @return the id that is used to save this mapview
+     */
+    private String getPersistableId() {
+        return this.getClass().getSimpleName();
+    }
 
-	@Override
-	public void onSharedPreferenceChanged(SharedPreferences preferences,
-			String key) {
+    /**
+     * @return the screen ratio that the mapview takes up (for cache
+     * calculation)
+     */
+    private float getScreenRatio() {
+        return 1.0f;
+    }
 
-	}
+    private TileRendererLayer createTileRendererLayer(
+            TileCache tileCache, MapViewPosition mapViewPosition,
+            XmlRenderTheme renderTheme, boolean hasAlpha) throws IOException {
+        TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache,
+                new MapFile(Storage.getResourceAsFile(this, R.raw.site)), mapViewPosition, hasAlpha,
+                true, AndroidGraphicFactory.INSTANCE);
+        tileRendererLayer.setXmlRenderTheme(renderTheme);
+        tileRendererLayer.setTextScale(1.5f);
+        return tileRendererLayer;
+    }
 
-	private Drawable getMyLocationDrawable() {
-		try {
-			final SVG svg = SVGParser.getSVGFromResource(getResources(), R.raw.my_location);
-			return svg.createPictureDrawable();
-		} catch (SVGParseException e) {
-			throw new RuntimeException("Could not load my location image", e);
-		}
-	}
-	
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences preferences,
+                                          String key) {
 
-	@Override
-	public void onColonyChanged(Bundle colonyData) {
-		// Find the colony that was changed and update its data
-		final String colonyId = colonyData.getString("colony_id");
-		Colony colony = colonies.get(colonyId);
-		if(colonyData.containsKey("colony_visited")) {
-			colony.setAttribute("census.visited", colonyData.getBoolean("colony_visited"));
-		}
-		if(colonyData.containsKey("colony_active")) {
-			colony.setAttribute("census.active", colonyData.getBoolean("colony_active"));
-		}
-		// Save the colony
-		provider.updateColony(colony);
-		// Redraw the colonies, and all other layers
-		layerManager.redrawLayers();
-	}
+    }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.main, menu);
+    private Drawable getMyLocationDrawable() {
+        try {
+            final SVG svg = SVGParser.getSVGFromResource(getResources(), R.raw.my_location);
+            return svg.createPictureDrawable();
+        } catch (SVGParseException e) {
+            throw new RuntimeException("Could not load my location image", e);
+        }
+    }
 
-		// Search box/item
-		final MenuItem searchItem = menu.findItem(R.id.search_box);
-		searchItem.expandActionView();
-		final SearchView searchView = (SearchView) searchItem.getActionView();
-		// Configure: Only expect numbers
-		searchView.setInputType(InputType.TYPE_CLASS_TEXT);
+    @Override
+    public void onColonyChanged(Bundle colonyData) {
+        // Find the colony that was changed and update its data
+        final String colonyId = colonyData.getString("colony_id");
+        Colony colony = colonies.get(colonyId);
+        if (colonyData.containsKey("colony_visited")) {
+            colony.setAttribute("census.visited", colonyData.getBoolean("colony_visited"));
+        }
+        if (colonyData.containsKey("colony_active")) {
+            colony.setAttribute("census.active", colonyData.getBoolean("colony_active"));
+        }
+        // Save the colony
+        provider.updateColony(colony);
+        // Redraw the colonies, and all other layers
+        layerManager.redrawLayers();
+    }
 
-		searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
 
-			@Override
-			public boolean onQueryTextChange(String newText) {
-				return false;
-			}
+        // Search box/item
+        final MenuItem searchItem = menu.findItem(R.id.search_box);
+        searchItem.expandActionView();
+        final SearchView searchView = (SearchView) searchItem.getActionView();
+        // Configure: Only expect numbers
+        searchView.setInputType(InputType.TYPE_CLASS_TEXT);
 
-			@Override
-			public boolean onQueryTextSubmit(String query) {
-				// Search for the colony
-				try {
-					String colonyId = query.trim();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
-					Colony newSelectedColony = colonies.get(colonyId);
-					if(newSelectedColony != null) {
-						// Deselect the current selected colony and select the new one
-						selection.setSelectedColony(newSelectedColony);
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
 
-						// Remove the focus from the search field
-						searchView.clearFocus();
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // Search for the colony
+                try {
+                    String colonyId = query.trim();
 
-						// Center the map view on the colony
-						mapView.getModel().mapViewPosition.animateTo(
-								CoordinateTransformer.getInstance().toGps((float) newSelectedColony.getX(),
-										(float) newSelectedColony.getY()));
-						return true;
-					}
-					else {
-						// No colony
-						new AlertDialog.Builder(MainActivity.this)
-								.setTitle("Not found")
-								.setMessage("No colony with that number exists")
-								.setIcon(android.R.drawable.ic_dialog_alert)
-								.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
-						return false;
-					}
-				} catch (NumberFormatException e) {
-					new AlertDialog.Builder(MainActivity.this)
-							.setTitle("Invalid query")
-							.setMessage("The search query is not a number")
-							.setIcon(android.R.drawable.ic_dialog_alert)
-							.setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
-				}
-				return false;
-			}
+                    Colony newSelectedColony = colonies.get(colonyId);
+                    if (newSelectedColony != null) {
+                        // Deselect the current selected colony and select the new one
+                        selection.setSelectedColony(newSelectedColony);
 
-		});
+                        // Remove the focus from the search field
+                        searchView.clearFocus();
 
-		// Edit item
-		final MenuItem editItem = menu.findItem(R.id.edit_item);
-		editItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                        // Center the map view on the colony
+                        mapView.getModel().mapViewPosition.animateTo(
+                                CoordinateTransformer.getInstance()
+                                        .toGps((float) newSelectedColony.getX(),
+                                                (float) newSelectedColony.getY()));
+                        return true;
+                    } else {
+                        // No colony
+                        new AlertDialog.Builder(MainActivity.this)
+                                .setTitle("Not found")
+                                .setMessage("No colony with that number exists")
+                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                .setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
+                        return false;
+                    }
+                } catch (NumberFormatException e) {
+                    new AlertDialog.Builder(MainActivity.this)
+                            .setTitle("Invalid query")
+                            .setMessage("The search query is not a number")
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
+                }
+                return false;
+            }
 
-			@Override
-			public boolean onMenuItemClick(MenuItem item) {
-				final Colony selectedColony = selection.getSelectedColony();
-				if(selectedColony != null) {
-					ColonyEditDialogFragment editor = ColonyEditDialogFragment.newInstance(selectedColony);
-					editor.show(getFragmentManager(), "editor");
-				}
-				return true;
-			}
-			
-		});
-		
-		// My location toggle item
-		final MenuItem myLocationItem = menu.findItem(R.id.my_location_item);
-		// Change the check state and toggle snap-to-location when pressed
-		myLocationItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-			@Override
-			public boolean onMenuItemClick(MenuItem item) {
-				myLocationItem.setChecked(!myLocationItem.isChecked());
-				
-				if(myLocationItem.isChecked()) {
-					myLocationItem.setIcon(R.drawable.ic_menu_my_location_blue);
-					locationOverlay.setSnapToLocationEnabled(true);
-				}
-				else {
-					myLocationItem.setIcon(R.drawable.ic_menu_my_location_gray);
-					locationOverlay.setSnapToLocationEnabled(false);
-				}
-				
-				return true;
-			}
-		});
+        });
 
-		// Add colony item
-		final MenuItem newColonyItem = menu.findItem(R.id.new_colony_item);
-		newColonyItem.setOnMenuItemClickListener(new OnMenuItemClickListener() {
-			@Override
-			public boolean onMenuItemClick(MenuItem item) {
-				NewColonyDialogFragment dialog = new NewColonyDialogFragment();
-				dialog.show(getFragmentManager(), "new colony");
-				return true;
-			}
-		});
+        // Edit item
+        final MenuItem editItem = menu.findItem(R.id.edit_item);
+        editItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
 
-		// Show colonies item
-		final MenuItem showColoniesItem = menu.findItem(R.id.show_new_colonies_item);
-		showColoniesItem.setOnMenuItemClickListener(new OnMenuItemClickListener() {
-			@Override
-			public boolean onMenuItemClick(MenuItem item) {
-				final List<NewColony> colonies = newColonyDB.getNewColonies();
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                final Colony selectedColony = selection.getSelectedColony();
+                if (selectedColony != null) {
+                    ColonyEditDialogFragment editor = ColonyEditDialogFragment.newInstance(
+                            selectedColony);
+                    editor.show(getFragmentManager(), "editor");
+                }
+                return true;
+            }
 
-				final NewColonyListDialogFragment dialog = new NewColonyListDialogFragment();
-				final Bundle args = new Bundle();
-				args.putParcelableArray("colonies", colonies.toArray(new NewColony[colonies.size()]));
-				dialog.setArguments(args);
-				dialog.show(getFragmentManager(), "new colony list");
+        });
 
-				return true;
-			}
-		});
-		
-		// Check for updates item
-		final MenuItem checkForUpdatesItem = menu.findItem(R.id.check_for_updates_item);
-		checkForUpdatesItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-			@Override
-			public boolean onMenuItemClick(MenuItem item) {
-				// Start the update check activity
-				final Intent intent = new Intent(MainActivity.this, org.samcrow.updater.UpdateCheckActivity.class);
-				intent.setData(Uri.parse("https://dl.dropboxusercontent.com/u/1278290/ColonyNavigator3Update"));
-				startActivity(intent);
-				
-				return true;
-			}
-		});
+        // My location toggle item
+        final MenuItem myLocationItem = menu.findItem(R.id.my_location_item);
+        // Change the check state and toggle snap-to-location when pressed
+        myLocationItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                myLocationItem.setChecked(!myLocationItem.isChecked());
 
-		return true;
-	}
+                if (myLocationItem.isChecked()) {
+                    myLocationItem.setIcon(R.drawable.ic_menu_my_location_blue);
+                    locationOverlay.setSnapToLocationEnabled(true);
+                } else {
+                    myLocationItem.setIcon(R.drawable.ic_menu_my_location_gray);
+                    locationOverlay.setSnapToLocationEnabled(false);
+                }
 
-	private static final DialogInterface.OnClickListener DIALOG_CLICK_NOOP = new DialogInterface.OnClickListener() {
-		@Override
-		public void onClick(DialogInterface arg0, int arg1) {
+                return true;
+            }
+        });
 
-		}
-	};
+        // Add colony item
+        final MenuItem newColonyItem = menu.findItem(R.id.new_colony_item);
+        newColonyItem.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                NewColonyDialogFragment dialog = new NewColonyDialogFragment();
+                dialog.show(getFragmentManager(), "new colony");
+                return true;
+            }
+        });
 
-	@Override
-	protected void onPause() {
-		super.onPause();
-		// Pause location updates
-		locationOverlay.disableMyLocation();
-	}
+        // Show colonies item
+        final MenuItem showColoniesItem = menu.findItem(R.id.show_new_colonies_item);
+        showColoniesItem.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                final List<NewColony> colonies = newColonyDB.getNewColonies();
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-		if(locationOverlay == null) {
-			setUpLocationOverlay();
-		}
-		// Start location updates
-		locationOverlay.enableMyLocation(false);
-	}
+                final NewColonyListDialogFragment dialog = new NewColonyListDialogFragment();
+                final Bundle args = new Bundle();
+                args.putParcelableArray("colonies",
+                        colonies.toArray(new NewColony[colonies.size()]));
+                dialog.setArguments(args);
+                dialog.show(getFragmentManager(), "new colony list");
 
-	@Override
-	public void createColony(String name, String notes) {
-		final Location currentLocation = locationOverlay.getLastLocation();
-		if(currentLocation == null) {
-			new AlertDialog.Builder(this)
-					.setTitle("No location available")
-					.setMessage("Please wait for the GPS location to be acquired")
-					.setPositiveButton(R.string.ok, DIALOG_CLICK_NOOP)
-					.show();
-			return;
-		}
-		final PointF localCoords = CoordinateTransformer.getInstance().toLocal(currentLocation.getLongitude(), currentLocation.getLatitude());
-		final NewColony colony = new NewColony(localCoords.x, localCoords.y, name, notes);
-		try {
-			newColonyDB.insertNewColony(colony);
-		}
-		catch (SQLException e) {
-			new AlertDialog.Builder(this)
-					.setTitle("Could not save colony")
-					.setMessage(e.getMessage())
-					.setPositiveButton(R.string.ok, DIALOG_CLICK_NOOP)
-					.show();
-		}
-	}
+                return true;
+            }
+        });
+
+        // Check for updates item
+        final MenuItem checkForUpdatesItem = menu.findItem(R.id.check_for_updates_item);
+        checkForUpdatesItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                // Start the update check activity
+                final Intent intent = new Intent(MainActivity.this,
+                        org.samcrow.updater.UpdateCheckActivity.class);
+                intent.setData(Uri.parse(
+                        "https://dl.dropboxusercontent.com/u/1278290/ColonyNavigator3Update"));
+                startActivity(intent);
+
+                return true;
+            }
+        });
+
+        return true;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Pause location updates
+        locationOverlay.disableMyLocation();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (locationOverlay == null) {
+            setUpLocationOverlay();
+        }
+        // Start location updates
+        locationOverlay.enableMyLocation(false);
+    }
+
+    @Override
+    public void createColony(String name, String notes) {
+        final Location currentLocation = locationOverlay.getLastLocation();
+        if (currentLocation == null) {
+            new AlertDialog.Builder(this)
+                    .setTitle("No location available")
+                    .setMessage("Please wait for the GPS location to be acquired")
+                    .setPositiveButton(R.string.ok, DIALOG_CLICK_NOOP)
+                    .show();
+            return;
+        }
+        final PointF localCoords = CoordinateTransformer.getInstance()
+                .toLocal(currentLocation.getLongitude(), currentLocation.getLatitude());
+        final NewColony colony = new NewColony(localCoords.x, localCoords.y, name, notes);
+        try {
+            newColonyDB.insertNewColony(colony);
+        } catch (SQLException e) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Could not save colony")
+                    .setMessage(e.getMessage())
+                    .setPositiveButton(R.string.ok, DIALOG_CLICK_NOOP)
+                    .show();
+        }
+    }
 }

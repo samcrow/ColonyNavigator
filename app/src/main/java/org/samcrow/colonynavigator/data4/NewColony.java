@@ -28,10 +28,10 @@ public class NewColony extends Positioned implements Parcelable {
     public NewColony(int id, double x, double y, String name, String notes) {
         super(x, y);
         this.id = id;
-        if(name == null) {
+        if (name == null) {
             throw new NullPointerException("name must not be null");
         }
-        if(notes == null) {
+        if (notes == null) {
             throw new NullPointerException("notes must not be null");
         }
         this.name = name;
