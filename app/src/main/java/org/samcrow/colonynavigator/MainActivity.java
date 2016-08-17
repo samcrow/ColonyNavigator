@@ -24,8 +24,8 @@ import com.applantation.android.svg.SVGParser;
 
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.MapPosition;
-import org.mapsforge.map.android.AndroidPreferences;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
+import org.mapsforge.map.android.util.AndroidPreferences;
 import org.mapsforge.map.android.util.AndroidUtil;
 import org.mapsforge.map.android.view.MapView;
 import org.mapsforge.map.layer.LayerManager;
@@ -131,7 +131,6 @@ public class MainActivity extends AppCompatActivity implements
     private void setUpMap() {
 
         mapView = new ColonyMapView(this);
-        mapView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
         Model model = mapView.getModel();
         model.init(this.preferencesFacade);
