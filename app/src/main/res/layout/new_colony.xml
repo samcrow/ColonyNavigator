@@ -50,7 +50,7 @@
         android:enabled="true"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:inputType="textShortMessage|textMultiLine"
+        android:inputType="textShortMessage|textMultiLine|textCapSentences"
         android:minLines="2"/>
 
 </LinearLayout>

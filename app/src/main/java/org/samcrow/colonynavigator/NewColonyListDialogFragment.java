@@ -1,12 +1,12 @@
 package org.samcrow.colonynavigator;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.database.DataSetObserver;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatDialogFragment;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,14 +25,13 @@ import java.io.File;
 /**
  * A dialog allowing the user to create a {@link org.samcrow.colonynavigator.data4.NewColony}
  */
-public class NewColonyListDialogFragment extends DialogFragment {
+public class NewColonyListDialogFragment extends AppCompatDialogFragment {
 
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(),
-                AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         builder.setTitle("New colonies");
         // Inflate the view from the XML file

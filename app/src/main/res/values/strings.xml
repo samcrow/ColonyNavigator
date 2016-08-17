@@ -24,5 +24,7 @@
     <string name="notes">Notes</string>
     <string name="name">Name</string>
     <string name="export">Export</string>
+    <string name="show_colonies">Show colonies</string>
+    <string name="new_colony">New colony</string>
 
 </resources>

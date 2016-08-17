@@ -1,23 +1,22 @@
 package org.samcrow.colonynavigator;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.database.SQLException;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
+import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.SearchView;
 
 import com.applantation.android.svg.SVG;
 import com.applantation.android.svg.SVGParseException;
@@ -55,7 +54,7 @@ import java.util.List;
 /**
  * The main activity
  */
-public class MainActivity extends Activity implements
+public class MainActivity extends AppCompatActivity implements
         OnSharedPreferenceChangeListener, ColonyEditDialogFragment.ColonyChangeListener,
         NewColonyDialogFragment.NewColonyListener {
 
@@ -64,12 +63,7 @@ public class MainActivity extends Activity implements
      */
     private static final MapPosition START_POSITION = new MapPosition(
             new LatLong(31.872176, -109.040983), (byte) 17);
-    private static final DialogInterface.OnClickListener DIALOG_CLICK_NOOP = new DialogInterface.OnClickListener() {
-        @Override
-        public void onClick(DialogInterface arg0, int arg1) {
 
-        }
-    };
     private PreferencesFacade preferencesFacade;
     private MapView mapView;
     private LayerManager layerManager;
@@ -122,7 +116,6 @@ public class MainActivity extends Activity implements
             new AlertDialog.Builder(MainActivity.this)
                     .setTitle(ex.getClass().getSimpleName())
                     .setMessage(ex.getMessage())
-                    .setIcon(android.R.drawable.ic_dialog_alert)
                     .setNeutralButton("Quit", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -138,6 +131,7 @@ public class MainActivity extends Activity implements
     private void setUpMap() {
 
         mapView = new ColonyMapView(this);
+        mapView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
 
         Model model = mapView.getModel();
         model.init(this.preferencesFacade);
@@ -167,8 +161,7 @@ public class MainActivity extends Activity implements
             new AlertDialog.Builder(MainActivity.this)
                     .setTitle("Failed to open map file")
                     .setMessage(e.getMessage())
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
+                    .show();
         }
         mapView.getModel().mapViewPosition.setMapPosition(START_POSITION);
     }
@@ -275,7 +268,8 @@ public class MainActivity extends Activity implements
         searchItem.expandActionView();
         final SearchView searchView = (SearchView) searchItem.getActionView();
         // Configure: Only expect numbers
-        searchView.setInputType(InputType.TYPE_CLASS_TEXT);
+        searchView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        searchView.setIconifiedByDefault(false);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
@@ -309,16 +303,14 @@ public class MainActivity extends Activity implements
                         new AlertDialog.Builder(MainActivity.this)
                                 .setTitle("Not found")
                                 .setMessage("No colony with that number exists")
-                                .setIcon(android.R.drawable.ic_dialog_alert)
-                                .setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
+                                .show();
                         return false;
                     }
                 } catch (NumberFormatException e) {
                     new AlertDialog.Builder(MainActivity.this)
                             .setTitle("Invalid query")
                             .setMessage("The search query is not a number")
-                            .setIcon(android.R.drawable.ic_dialog_alert)
-                            .setNeutralButton("OK", DIALOG_CLICK_NOOP).show();
+                            .show();
                 }
                 return false;
             }
@@ -335,7 +327,7 @@ public class MainActivity extends Activity implements
                 if (selectedColony != null) {
                     ColonyEditDialogFragment editor = ColonyEditDialogFragment.newInstance(
                             selectedColony);
-                    editor.show(getFragmentManager(), "editor");
+                    editor.show(getSupportFragmentManager(), "editor");
                 }
                 return true;
             }
@@ -368,7 +360,7 @@ public class MainActivity extends Activity implements
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 NewColonyDialogFragment dialog = new NewColonyDialogFragment();
-                dialog.show(getFragmentManager(), "new colony");
+                dialog.show(getSupportFragmentManager(), "new colony");
                 return true;
             }
         });
@@ -385,28 +377,11 @@ public class MainActivity extends Activity implements
                 args.putParcelableArray("colonies",
                         colonies.toArray(new NewColony[colonies.size()]));
                 dialog.setArguments(args);
-                dialog.show(getFragmentManager(), "new colony list");
+                dialog.show(getSupportFragmentManager(), "new colony list");
 
                 return true;
             }
         });
-
-        // Check for updates item
-        final MenuItem checkForUpdatesItem = menu.findItem(R.id.check_for_updates_item);
-        checkForUpdatesItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                // Start the update check activity
-                final Intent intent = new Intent(MainActivity.this,
-                        org.samcrow.updater.UpdateCheckActivity.class);
-                intent.setData(Uri.parse(
-                        "https://dl.dropboxusercontent.com/u/1278290/ColonyNavigator3Update"));
-                startActivity(intent);
-
-                return true;
-            }
-        });
-
         return true;
     }
 
@@ -434,7 +409,6 @@ public class MainActivity extends Activity implements
             new AlertDialog.Builder(this)
                     .setTitle("No location available")
                     .setMessage("Please wait for the GPS location to be acquired")
-                    .setPositiveButton(R.string.ok, DIALOG_CLICK_NOOP)
                     .show();
             return;
         }
@@ -447,7 +421,6 @@ public class MainActivity extends Activity implements
             new AlertDialog.Builder(this)
                     .setTitle("Could not save colony")
                     .setMessage(e.getMessage())
-                    .setPositiveButton(R.string.ok, DIALOG_CLICK_NOOP)
                     .show();
         }
     }

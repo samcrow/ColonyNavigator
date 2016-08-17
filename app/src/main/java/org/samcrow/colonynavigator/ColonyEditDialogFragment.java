@@ -1,10 +1,11 @@
 package org.samcrow.colonynavigator;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatDialogFragment;
 import android.view.View;
 import android.widget.CheckBox;
 
@@ -18,7 +19,7 @@ import org.samcrow.colonynavigator.data4.Colony;
  *
  * @author Sam Crow
  */
-public class ColonyEditDialogFragment extends DialogFragment {
+public class ColonyEditDialogFragment extends AppCompatDialogFragment {
 
     public static ColonyEditDialogFragment newInstance(Colony colony) {
         final ColonyEditDialogFragment fragment = new ColonyEditDialogFragment();
@@ -33,6 +34,7 @@ public class ColonyEditDialogFragment extends DialogFragment {
         return fragment;
     }
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
@@ -41,8 +43,7 @@ public class ColonyEditDialogFragment extends DialogFragment {
         final boolean colonyVisited = args.getBoolean("colony_visited");
         final boolean colonyActive = args.getBoolean("colony_active");
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity(),
-                AlertDialog.THEME_DEVICE_DEFAULT_LIGHT);
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
         builder.setTitle("Colony " + colonyId);
 

@@ -1,42 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/search_box"
-        android:actionViewClass="android.widget.SearchView"
         android:icon="@drawable/ic_action_search"
-        android:showAsAction="ifRoom"
-        android:title="@string/search"/>
+        android:title="@string/search"
+        app:actionViewClass="android.support.v7.widget.SearchView"
+        app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/edit_item"
         android:icon="@drawable/ic_action_edit"
-        android:showAsAction="ifRoom"
-        android:title="@string/edit_colony"/>
+        android:title="@string/edit_colony"
+        app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/new_colony_item"
         android:icon="@drawable/ic_add_black_36dp"
-        android:showAsAction="ifRoom"
-        android:title="New colony"/>
+        android:title="@string/new_colony"
+        app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/my_location_item"
         android:checkable="true"
         android:checked="false"
         android:icon="@drawable/ic_menu_my_location_gray"
-        android:showAsAction="ifRoom"
-        android:title="@string/my_location"/>
+        android:title="@string/my_location"
+        app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/show_new_colonies_item"
-        android:showAsAction="never"
-        android:title="Show colonies"/>
-
-
-    <item
-        android:id="@+id/check_for_updates_item"
-        android:showAsAction="never"
-        android:title="@string/check_for_updates"/>
+        android:title="@string/show_colonies"
+        android:icon="@drawable/ic_menu_black_24dp"
+        app:showAsAction="ifRoom"/>
 
 </menu>
