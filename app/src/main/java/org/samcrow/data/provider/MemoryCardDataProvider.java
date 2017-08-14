@@ -1,10 +1,13 @@
 package org.samcrow.data.provider;
 
+import android.Manifest.permission;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.support.v4.content.ContextCompat;
 import android.widget.Toast;
 
 import org.samcrow.colonynavigator.R;
@@ -202,6 +205,11 @@ public class MemoryCardDataProvider implements ColonyProvider {
         @Override
         public Void doInBackground(Void... args) {
             File file = new File(cardPath + kJsonFileName);
+
+            // Check permissions
+            if (ContextCompat.checkSelfPermission(context, permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                throw new IllegalStateException("No permission to write external storage");
+            }
 
             FileParser parser = new JSONFileParser(file);
             try {

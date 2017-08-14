@@ -113,15 +113,9 @@ public class JSONFileParser extends JSONParser implements FileParser {
         } catch (JSONException e) {
             throw new IOException("Could not create top-level JSON", e);
         }
-
-        try {
-            PrintStream stream = new PrintStream(file);
-            stream.println(jsonRoot.toString());
-            stream.close();
-        } catch (FileNotFoundException e) {
-            throw new IOException(e);
-        }
-
+        PrintStream stream = new PrintStream(file);
+        stream.println(jsonRoot.toString());
+        stream.close();
     }
 
 }
