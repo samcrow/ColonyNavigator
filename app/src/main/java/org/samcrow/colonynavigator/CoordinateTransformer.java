@@ -4,88 +4,42 @@ import android.graphics.Matrix;
 import android.graphics.PointF;
 
 import org.mapsforge.core.model.LatLong;
-import org.samcrow.colonynavigator.data4.Colony;
 
 /**
  * Transforms coordinates from GPS latitude/longitude into local colony
- * coordinates. <br />
- * To do this, this class takes the GPS coordinates adn:
- * <ol>
- * <li>Translates them</li>
- * <li>Rotates them around the local zero point</li>
- * <li>Scales them around the local zero point</li>
- * </ol>
+ * coordinates
  *
  * @author Sam Crow
  */
 public class CoordinateTransformer {
 
+    private static final String TAG = CoordinateTransformer.class.getName();
     private static CoordinateTransformer instance;
     private Matrix matrix = new Matrix();
     private Matrix inverse = new Matrix();
 
     /**
-     * Constructor that uses the local position and latitude/longitude of 2
-     * points to calculate offsets, rotation, & scale
-     *
-     * @param points Up to 4 points to use to map coordinates
+     * Constructor
      */
-    private CoordinateTransformer(MapPoint... points) {
+    private CoordinateTransformer() {
 
-        if (points.length > 4) {
-            throw new IllegalArgumentException("Cannot use more than 4 points.");
-        }
-
-        float[] sourcePoints = new float[points.length * 2];
-
-        float[] destPoints = new float[points.length * 2];
-
-        int i = 0;
-        for (MapPoint point : points) {
-            //Source points: latitude/longitude
-            sourcePoints[2 * i] = (float) point.getLongitude(); //Longitude = x
-            System.out.println("X (lon) " + 2 * i + " " + sourcePoints[2 * i]);
-            sourcePoints[2 * i + 1] = (float) point.getLatitude();//Latitude = y
-            System.out.println("Y (lat) " + (2 * i + 1) + " " + sourcePoints[2 * i + 1]);
-
-
-            //Destination points: colony coordinates
-            destPoints[2 * i] = (float) point.getX();
-            System.out.println("Dest X " + 2 * i + " " + destPoints[2 * i]);
-            destPoints[2 * i + 1] = (float) point.getY();
-            System.out.println("Dest Y " + (2 * i + 1) + " " + destPoints[2 * i + 1]);
-
-            i++;
-        }
-
-        boolean success = matrix.setPolyToPoly(sourcePoints, 0, destPoints, 0, points.length);
-        if (!success) {
-            throw new RuntimeException("Could not set up matrix");
-        }
-
-        boolean invertSuccess = matrix.invert(inverse);
-        if (!invertSuccess) {
-            throw new RuntimeException("Could not invert matrix");
-        }
-
-        System.out.println(matrix);
+        // Hard-coded values provided by Erik Steiner
+        inverse.setValues(new float[]{
+                0.0000031740000f, 0.0000006358000f, -109.043098200f,
+                -0.0000005184000f, 0.0000027130000f, 31.870789500f,
+                0.0f, 0.0f, 1.0f
+        });
+        matrix.setValues(new float[]{
+                303445, -71113.3f, 3.5355E7f,
+                57982.3f, 355007, -4.99179E6f,
+                0.0f, 0.0f, 1.0f
+        });
     }
 
     public static CoordinateTransformer getInstance() {
 
         if (instance == null) {
-
-            final MapPoint topLeft = new MapPoint(new Colony("962", 68, 707, false), 31.87265776,
-                    -109.04243);
-            final MapPoint bottomRight = new MapPoint(new Colony("980", 1324, 289, false),
-                    31.87087500797029, -109.03870950670428);
-            final MapPoint bottomLeft = new MapPoint(new Colony("567", 110, 110, false), 31.871036,
-                    -109.042678);
-            @SuppressWarnings("unused")
-            final MapPoint topRight = new MapPoint(new Colony("442", 110, 782, false), 31.872357,
-                    -109.0391114);
-
-            instance = new CoordinateTransformer(topLeft, bottomRight, bottomLeft);
+            instance = new CoordinateTransformer();
         }
 
         return instance;

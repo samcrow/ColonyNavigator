@@ -22,6 +22,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
+import android.util.Log;
 
 import org.mapsforge.core.graphics.Bitmap;
 import org.mapsforge.core.graphics.Canvas;
@@ -45,6 +46,9 @@ import org.mapsforge.map.model.MapViewPosition;
  * (otherwise no DisplayModel is set).
  */
 public class MyLocationOverlay extends Layer implements LocationListener {
+
+    private static final String TAG = MyLocationOverlay.class.getSimpleName();
+
     private static final GraphicFactory GRAPHIC_FACTORY = AndroidGraphicFactory.INSTANCE;
     private final Circle circle;
     private final LocationManager locationManager;
@@ -91,7 +95,7 @@ public class MyLocationOverlay extends Layer implements LocationListener {
      * @return a new LatLong with the geographical coordinates taken from the given location.
      */
     public static LatLong locationToLatLong(Location location) {
-        return new LatLong(location.getLatitude(), location.getLongitude(), true);
+        return new LatLong(location.getLatitude(), location.getLongitude());
     }
 
     private static Paint getDefaultCircleFill() {
@@ -252,8 +256,13 @@ public class MyLocationOverlay extends Layer implements LocationListener {
         for (String provider : this.locationManager.getProviders(true)) {
             if (LocationManager.GPS_PROVIDER.equals(provider)
                     || LocationManager.NETWORK_PROVIDER.equals(provider)) {
-                result = true;
-                this.locationManager.requestLocationUpdates(provider, minTime, minDistance, this);
+                try {
+                    this.locationManager.requestLocationUpdates(provider, minTime, minDistance,
+                            this);
+                    result = true;
+                } catch (SecurityException e) {
+                    Log.w(TAG, "Failed to get location", e);
+                }
             }
         }
         this.myLocationEnabled = result;

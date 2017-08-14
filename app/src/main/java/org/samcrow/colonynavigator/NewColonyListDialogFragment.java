@@ -23,7 +23,7 @@ import org.samcrow.colonynavigator.data4.NewColonyWriteTask.Params;
 import java.io.File;
 
 /**
- * A dialog allowing the user to create a {@link org.samcrow.colonynavigator.data4.NewColony}
+ * Displays a list of {@link org.samcrow.colonynavigator.data4.NewColony NewColonies}
  */
 public class NewColonyListDialogFragment extends AppCompatDialogFragment {
 

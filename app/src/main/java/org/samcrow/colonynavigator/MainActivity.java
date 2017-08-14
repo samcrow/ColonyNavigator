@@ -1,21 +1,27 @@
 package org.samcrow.colonynavigator;
 
+import android.Manifest.permission;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.pm.PackageManager;
 import android.database.SQLException;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
-import android.view.View;
 import android.widget.FrameLayout;
 
 import com.applantation.android.svg.SVG;
@@ -49,6 +55,7 @@ import org.samcrow.data.provider.ColonyProvider;
 import org.samcrow.data.provider.MemoryCardDataProvider;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -64,6 +71,12 @@ public class MainActivity extends AppCompatActivity implements
     private static final MapPosition START_POSITION = new MapPosition(
             new LatLong(31.872176, -109.040983), (byte) 17);
 
+    /**
+     * The request code used for permissions
+     */
+    private static final int PERMISSION_REQUEST = 30223;
+    private static final String TAG = MainActivity.class.getSimpleName();
+
     private PreferencesFacade preferencesFacade;
     private MapView mapView;
     private LayerManager layerManager;
@@ -75,6 +88,11 @@ public class MainActivity extends AppCompatActivity implements
      * The current selected colony
      */
     private ColonySelection selection = new ColonySelection();
+
+    /**
+     * If the application has been granted all permissions and has completed initialization
+     */
+    private boolean mInitialized = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,29 +108,31 @@ public class MainActivity extends AppCompatActivity implements
 
             setTitle("Map");
 
-            setUpMap();
-
-            // Add colonies
-            provider = new MemoryCardDataProvider(this, Storage.getMemoryCard());
-
-            final CoordinateTransformer transformer = CoordinateTransformer.getInstance();
-            colonies = provider.getColonies();
-            for (Colony colony : colonies) {
-                layerManager.getLayers().add(new ColonyMarker(colony, transformer));
+            // Check permissions
+            final String[] allPermissions = {
+                    permission.ACCESS_FINE_LOCATION,
+                    permission.INTERNET,
+                    permission.READ_EXTERNAL_STORAGE,
+                    permission.WRITE_EXTERNAL_STORAGE,
+            };
+            final List<String> missingPermissions = new ArrayList<>(allPermissions.length);
+            for (String permission : allPermissions) {
+                if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                    missingPermissions.add(permission);
+                }
+            }
+            if (missingPermissions.isEmpty()) {
+                // Go ahead
+                postPermissionSetup();
+            } else {
+                // Request permission
+                ActivityCompat.requestPermissions(this, missingPermissions.toArray(new String[missingPermissions.size()]), PERMISSION_REQUEST);
             }
 
-            // Add layers above colonies
-
-            // Location layer
-            setUpLocationOverlay();
-            // Route line layer
-            setUpRouteLine();
-
-            // New colonies
-            newColonyDB = new NewColonyDatabase(this);
 
         } catch (Exception ex) {
             // Show a dialog, then quit
+            Log.e(TAG, "Exception", ex);
             new AlertDialog.Builder(MainActivity.this)
                     .setTitle(ex.getClass().getSimpleName())
                     .setMessage(ex.getMessage())
@@ -125,7 +145,84 @@ public class MainActivity extends AppCompatActivity implements
                     })
                     .show();
         }
+    }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST) {
+            boolean allGranted = true;
+
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+
+            if (allGranted) {
+                try {
+                    postPermissionSetup();
+                } catch (Exception ex) {
+                    Log.e(TAG, "Exception", ex);
+                    // Show a dialog, then quit
+                    new AlertDialog.Builder(this)
+                            .setTitle(ex.getClass().getSimpleName())
+                            .setMessage(ex.getMessage())
+                            .setNeutralButton("Quit", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // Close this activity
+                                    MainActivity.this.finish();
+                                }
+                            })
+                            .show();
+                }
+            } else {
+                // Error dialog
+                new AlertDialog.Builder(this)
+                        .setTitle("Permissions not granted")
+                        .setMessage("Please grant all required permissions to use this application.")
+                        .setNeutralButton("Quit", new OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                finish();
+                            }
+                        })
+                        .show();
+            }
+        }
+    }
+
+    /**
+     * Does setup tasks. Assumes that all necessary permissions have been granted.
+     * @throws IOException if an error occurs
+     */
+    private void postPermissionSetup() throws IOException {
+        setUpMap();
+
+        // Add colonies
+        provider = new MemoryCardDataProvider(this, Storage.getMemoryCard());
+
+        final CoordinateTransformer transformer = CoordinateTransformer.getInstance();
+        colonies = provider.getColonies();
+        for (Colony colony : colonies) {
+            layerManager.getLayers().add(new ColonyMarker(colony, transformer));
+        }
+
+        // Add layers above colonies
+
+        // Location layer
+        setUpLocationOverlay();
+        // Route line layer
+        setUpRouteLine();
+
+        // New colonies
+        newColonyDB = new NewColonyDatabase(this);
+        mInitialized = true;
+        // Start location updates
+        locationOverlay.enableMyLocation(false);
     }
 
     private void setUpMap() {
@@ -153,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements
             TileRendererLayer tileRendererLayer = createTileRendererLayer(
                     tileCache,
                     initializePosition(mapView.getModel().mapViewPosition),
-                    InternalRenderTheme.OSMARENDER, false);
+                    InternalRenderTheme.OSMARENDER);
 
             layerManager.getLayers().add(tileRendererLayer);
         } catch (IOException e) {
@@ -217,10 +314,10 @@ public class MainActivity extends AppCompatActivity implements
 
     private TileRendererLayer createTileRendererLayer(
             TileCache tileCache, MapViewPosition mapViewPosition,
-            XmlRenderTheme renderTheme, boolean hasAlpha) throws IOException {
+            XmlRenderTheme renderTheme) throws IOException {
         TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache,
-                new MapFile(Storage.getResourceAsFile(this, R.raw.site)), mapViewPosition, hasAlpha,
-                true, AndroidGraphicFactory.INSTANCE);
+                new MapFile(Storage.getResourceAsFile(this, R.raw.site)), mapViewPosition,
+                AndroidGraphicFactory.INSTANCE);
         tileRendererLayer.setXmlRenderTheme(renderTheme);
         tileRendererLayer.setTextScale(1.5f);
         return tileRendererLayer;
@@ -387,18 +484,22 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        // Pause location updates
-        locationOverlay.disableMyLocation();
+        if (locationOverlay != null) {
+            // Pause location updates
+            locationOverlay.disableMyLocation();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (locationOverlay == null) {
-            setUpLocationOverlay();
+        if (mInitialized) {
+            if (locationOverlay == null) {
+                setUpLocationOverlay();
+            }
+            // Start location updates
+            locationOverlay.enableMyLocation(false);
         }
-        // Start location updates
-        locationOverlay.enableMyLocation(false);
     }
 
     @Override

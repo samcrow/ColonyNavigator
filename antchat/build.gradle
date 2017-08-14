@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion '23.0.1'
+    compileSdkVersion 25
+    buildToolsVersion '26.0.1'
 
     defaultConfig {
         applicationId "org.samcrow.antchat"
         minSdkVersion 16
-        targetSdkVersion 19
+        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
     }

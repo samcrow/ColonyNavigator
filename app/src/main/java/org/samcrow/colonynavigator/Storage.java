@@ -74,6 +74,10 @@ public class Storage {
         if (dir.exists() && dir.isDirectory()) {
             return dir;
         }
+        dir = new File("/storage/1C45-180D");
+        if (dir.exists() && dir.isDirectory()) {
+            return dir;
+        }
         return Environment.getExternalStorageDirectory();
     }
 }
