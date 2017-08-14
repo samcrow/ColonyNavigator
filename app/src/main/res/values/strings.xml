@@ -26,5 +26,14 @@
     <string name="export">Export</string>
     <string name="show_colonies">Show colonies</string>
     <string name="new_colony">New colony</string>
+    <string name="permissions_not_granted">Permissions not granted</string>
+    <string name="request_grant_permissions">Please grant all required permissions to use this application.</string>
+    <string name="quit">Quit</string>
+    <string name="failed_to_open_map">Failed to open map file</string>
+    <string name="not_found">Not found</string>
+    <string name="no_colony_exists">No colony with that number exists</string>
+    <string name="no_location_available">No location available</string>
+    <string name="wait_for_location">Please wait for the GPS location to be acquired</string>
+    <string name="colony_save_failed">Could not save colony</string>
 
 </resources>

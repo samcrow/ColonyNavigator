@@ -15,6 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AlertDialog.Builder;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.text.InputType;
@@ -181,10 +182,10 @@ public class MainActivity extends AppCompatActivity implements
                 }
             } else {
                 // Error dialog
-                new AlertDialog.Builder(this)
-                        .setTitle("Permissions not granted")
-                        .setMessage("Please grant all required permissions to use this application.")
-                        .setNeutralButton("Quit", new OnClickListener() {
+                new Builder(this)
+                        .setTitle(R.string.permissions_not_granted)
+                        .setMessage(R.string.request_grant_permissions)
+                        .setNeutralButton(R.string.quit, new OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 finish();
@@ -254,8 +255,8 @@ public class MainActivity extends AppCompatActivity implements
 
             layerManager.getLayers().add(tileRendererLayer);
         } catch (IOException e) {
-            new AlertDialog.Builder(MainActivity.this)
-                    .setTitle("Failed to open map file")
+            new Builder(MainActivity.this)
+                    .setTitle(R.string.failed_to_open_map)
                     .setMessage(e.getMessage())
                     .show();
         }
@@ -377,38 +378,30 @@ public class MainActivity extends AppCompatActivity implements
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // Search for the colony
-                try {
-                    String colonyId = query.trim();
+                String colonyId = query.trim();
 
-                    Colony newSelectedColony = colonies.get(colonyId);
-                    if (newSelectedColony != null) {
-                        // Deselect the current selected colony and select the new one
-                        selection.setSelectedColony(newSelectedColony);
+                Colony newSelectedColony = colonies.get(colonyId);
+                if (newSelectedColony != null) {
+                    // Deselect the current selected colony and select the new one
+                    selection.setSelectedColony(newSelectedColony);
 
-                        // Remove the focus from the search field
-                        searchView.clearFocus();
+                    // Remove the focus from the search field
+                    searchView.clearFocus();
 
-                        // Center the map view on the colony
-                        mapView.getModel().mapViewPosition.animateTo(
-                                CoordinateTransformer.getInstance()
-                                        .toGps((float) newSelectedColony.getX(),
-                                                (float) newSelectedColony.getY()));
-                        return true;
-                    } else {
-                        // No colony
-                        new AlertDialog.Builder(MainActivity.this)
-                                .setTitle("Not found")
-                                .setMessage("No colony with that number exists")
-                                .show();
-                        return false;
-                    }
-                } catch (NumberFormatException e) {
-                    new AlertDialog.Builder(MainActivity.this)
-                            .setTitle("Invalid query")
-                            .setMessage("The search query is not a number")
+                    // Center the map view on the colony
+                    mapView.getModel().mapViewPosition.animateTo(
+                            CoordinateTransformer.getInstance()
+                                    .toGps((float) newSelectedColony.getX(),
+                                            (float) newSelectedColony.getY()));
+                    return true;
+                } else {
+                    // No colony
+                    new Builder(MainActivity.this)
+                            .setTitle(R.string.not_found)
+                            .setMessage(R.string.no_colony_exists)
                             .show();
+                    return false;
                 }
-                return false;
             }
 
         });
@@ -506,9 +499,9 @@ public class MainActivity extends AppCompatActivity implements
     public void createColony(String name, String notes) {
         final Location currentLocation = locationOverlay.getLastLocation();
         if (currentLocation == null) {
-            new AlertDialog.Builder(this)
-                    .setTitle("No location available")
-                    .setMessage("Please wait for the GPS location to be acquired")
+            new Builder(this)
+                    .setTitle(R.string.no_location_available)
+                    .setMessage(R.string.wait_for_location)
                     .show();
             return;
         }
@@ -518,8 +511,8 @@ public class MainActivity extends AppCompatActivity implements
         try {
             newColonyDB.insertNewColony(colony);
         } catch (SQLException e) {
-            new AlertDialog.Builder(this)
-                    .setTitle("Could not save colony")
+            new Builder(this)
+                    .setTitle(R.string.colony_save_failed)
                     .setMessage(e.getMessage())
                     .show();
         }
