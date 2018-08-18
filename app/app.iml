@@ -118,6 +118,7 @@
     <orderEntry type="library" name="Gradle: com.android.support:support-annotations:25.4.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: commons-io:commons-io:2.4@jar" level="project" />
     <orderEntry type="library" name="Gradle: joda-time:joda-time:2.9.2@jar" level="project" />
+    <orderEntry type="library" name="Gradle: __local_aars__:/home/samcrow/Documents/Ants/ColonyNavigator/app/libs/jcoord-1.0.jar:unspecified@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.mapsforge:mapsforge-themes:0.8.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: org.mapsforge:svg-android:0.4.3@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:animated-vector-drawable-25.4.0" level="project" />

@@ -30,7 +30,7 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation files('libs/jcoord-1.0.jar')
     implementation project(':xbeeandroid')
     implementation 'com.android.support:appcompat-v7:25.4.0'
     implementation 'joda-time:joda-time:2.9.2'
