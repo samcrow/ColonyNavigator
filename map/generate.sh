@@ -1,12 +1,7 @@
 #!/bin/bash
 
-cd `pwd`
-
-# Download map writer plugin
-mkdir -p plugins
-cd plugins
-curl -O http://ci.mapsforge.org/job/dev/lastSuccessfulBuild/artifact/mapsforge-map-writer/build/libs/mapsforge-map-writer-dev-SNAPSHOT.jar
-cd ..
+# Before running, download a jar-with-dependencies from https://search.maven.org/search?q=a:mapsforge-map-writer
+# and place it in the plugins folder
 
 # Run Osmosis
 osmosis --rx file=Site.osm --mapfile-writer file=Site.map
