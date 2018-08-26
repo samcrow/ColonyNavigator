@@ -24,11 +24,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.widget.FrameLayout;
-
 import com.applantation.android.svg.SVG;
 import com.applantation.android.svg.SVGParseException;
 import com.applantation.android.svg.SVGParser;
-
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.core.model.MapPosition;
 import org.mapsforge.map.android.graphics.AndroidGraphicFactory;
@@ -44,16 +42,15 @@ import org.mapsforge.map.model.common.PreferencesFacade;
 import org.mapsforge.map.reader.MapFile;
 import org.mapsforge.map.rendertheme.InternalRenderTheme;
 import org.mapsforge.map.rendertheme.XmlRenderTheme;
-import org.samcrow.colonynavigator.data4.Colony;
-import org.samcrow.colonynavigator.data4.ColonySelection;
-import org.samcrow.colonynavigator.data4.ColonySet;
-import org.samcrow.colonynavigator.data4.NewColony;
-import org.samcrow.colonynavigator.data4.NewColonyDatabase;
+import org.samcrow.colonynavigator.data4.*;
 import org.samcrow.colonynavigator.map.ColonyMarker;
 import org.samcrow.colonynavigator.map.NotifyingMyLocationOverlay;
 import org.samcrow.colonynavigator.map.RouteLineLayer;
 import org.samcrow.data.provider.ColonyProvider;
+import org.samcrow.data.provider.HardCodedColonyProvider;
 import org.samcrow.data.provider.MemoryCardDataProvider;
+import org.samcrow.differentialgps.DifferentialGps;
+import org.samcrow.differentialgps.Station;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -90,6 +87,8 @@ public class MainActivity extends AppCompatActivity implements
      */
     private ColonySelection selection = new ColonySelection();
 
+    private DifferentialGps mDifferentialGps;
+
     /**
      * If the application has been granted all permissions and has completed initialization
      */
@@ -115,6 +114,8 @@ public class MainActivity extends AppCompatActivity implements
                     permission.INTERNET,
                     permission.READ_EXTERNAL_STORAGE,
                     permission.WRITE_EXTERNAL_STORAGE,
+                    permission.BLUETOOTH,
+                    permission.BLUETOOTH_ADMIN,
             };
             final List<String> missingPermissions = new ArrayList<>(allPermissions.length);
             for (String permission : allPermissions) {
@@ -204,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements
         setUpMap();
 
         // Add colonies
-        provider = new MemoryCardDataProvider(this, Storage.getMemoryCard());
+        provider = HardCodedColonyProvider.instance;
 
         final CoordinateTransformer transformer = CoordinateTransformer.getInstance();
         colonies = provider.getColonies();
@@ -224,6 +225,18 @@ public class MainActivity extends AppCompatActivity implements
         mInitialized = true;
         // Start location updates
         locationOverlay.enableMyLocation(false);
+
+        // Base station should be placed at colony 1373
+        final Colony baseStationColony = colonies.get("1373");
+        final LatLong baseStationPosition = CoordinateTransformer.getInstance()
+                .toGps((float) baseStationColony.getX(), (float) baseStationColony.getY());
+
+        final Station[] baseStations = {
+                new Station("30:AE:A4:99:11:ED", baseStationPosition.latitude, baseStationPosition.longitude),
+        };
+
+        mDifferentialGps = new DifferentialGps(this, baseStations);
+        locationOverlay.setDifferentialGps(mDifferentialGps);
     }
 
     private void setUpMap() {
@@ -481,6 +494,9 @@ public class MainActivity extends AppCompatActivity implements
             // Pause location updates
             locationOverlay.disableMyLocation();
         }
+        if (mDifferentialGps != null) {
+            mDifferentialGps.pause();
+        }
     }
 
     @Override
@@ -492,6 +508,9 @@ public class MainActivity extends AppCompatActivity implements
             }
             // Start location updates
             locationOverlay.enableMyLocation(false);
+        }
+        if (mDifferentialGps != null) {
+            mDifferentialGps.start();
         }
     }
 

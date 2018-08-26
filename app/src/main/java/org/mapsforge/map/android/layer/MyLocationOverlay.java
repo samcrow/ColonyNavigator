@@ -37,6 +37,7 @@ import org.mapsforge.map.layer.Layer;
 import org.mapsforge.map.layer.overlay.Circle;
 import org.mapsforge.map.layer.overlay.Marker;
 import org.mapsforge.map.model.MapViewPosition;
+import org.samcrow.differentialgps.DifferentialGps;
 
 /**
  * A thread-safe {@link Layer} implementation to display the current location. NOTE: This code really does not reflect
@@ -54,12 +55,19 @@ public class MyLocationOverlay extends Layer implements LocationListener {
     private final LocationManager locationManager;
     private final MapViewPosition mapViewPosition;
     private final Marker marker;
+    private final Marker mCorrectedMarker;
     private float minDistance = 0.0f;
     private long minTime = 0;
     private boolean centerAtNextFix;
     private Location lastLocation;
     private boolean myLocationEnabled;
     private boolean snapToLocationEnabled;
+
+    /**
+     * Differential GPS thing, if available
+     */
+    private DifferentialGps mDifferentialGps;
+
     /**
      * Constructs a new {@code MyLocationOverlay} with the default circle paints.
      *
@@ -88,6 +96,8 @@ public class MyLocationOverlay extends Layer implements LocationListener {
         this.locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         this.marker = new Marker(null, bitmap, 0, 0);
         this.circle = new Circle(null, 0, circleFill, circleStroke);
+
+        mCorrectedMarker = new Marker(null, bitmap, 0, 0);
     }
 
     /**
@@ -114,6 +124,10 @@ public class MyLocationOverlay extends Layer implements LocationListener {
         return paint;
     }
 
+    public void setDifferentialGps(DifferentialGps differentialGps) {
+        mDifferentialGps = differentialGps;
+    }
+
     /**
      * Stops the receiving of location updates. Has no effect if location updates are already disabled.
      */
@@ -134,6 +148,7 @@ public class MyLocationOverlay extends Layer implements LocationListener {
 
         this.circle.draw(boundingBox, zoomLevel, canvas, topLeftPoint);
         this.marker.draw(boundingBox, zoomLevel, canvas, topLeftPoint);
+        this.mCorrectedMarker.draw(boundingBox, zoomLevel, canvas, topLeftPoint);
     }
 
     /**
@@ -150,6 +165,7 @@ public class MyLocationOverlay extends Layer implements LocationListener {
         this.centerAtNextFix = centerAtFirstFix;
         this.circle.setDisplayModel(this.displayModel);
         this.marker.setDisplayModel(this.displayModel);
+        mCorrectedMarker.setDisplayModel(this.displayModel);
         return true;
     }
 
@@ -212,6 +228,14 @@ public class MyLocationOverlay extends Layer implements LocationListener {
             if (this.centerAtNextFix || this.snapToLocationEnabled) {
                 this.centerAtNextFix = false;
                 this.mapViewPosition.setCenter(latLong);
+            }
+
+            if (mDifferentialGps != null) {
+                final LatLong correctedLatLong = new LatLong(latLong.latitude - mDifferentialGps.getLatitudeError(),
+                        latLong.longitude - mDifferentialGps.getLongitudeError());
+                mCorrectedMarker.setLatLong(correctedLatLong);
+            } else {
+                mCorrectedMarker.setLatLong(latLong);
             }
 
             requestRedraw();
