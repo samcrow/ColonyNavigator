@@ -1,5 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.samcrow.differentialgps">
+          package="org.samcrow.differentialgps">
+
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+
+    <application>
+        <service
+                android:name=".DifferentialGpsService"
+                android:enabled="true"
+                android:exported="true"
+                android:permission="org.samcrow.differentialgps.permission.ACCESS_LOCATION">
+        </service>
+    </application>
+
 </manifest>
