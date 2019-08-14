@@ -1,9 +1,12 @@
 package org.samcrow.differentialgps;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Information about a differential GPS base station
  */
-public class Station {
+public class Station implements Parcelable {
     /**
      * The Bluetooth address of the base station, formatted as a string
      * with colons between the bytes. All letters in the address should
@@ -28,6 +31,12 @@ public class Station {
         mAddress = address;
         mLatitude = latitude;
         mLongitude = longitude;
+    }
+
+    protected Station(Parcel in) {
+        mAddress = in.readString();
+        mLatitude = in.readDouble();
+        mLongitude = in.readDouble();
     }
 
     public String getAddress() {
@@ -70,4 +79,28 @@ public class Station {
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(mAddress);
+        dest.writeDouble(mLatitude);
+        dest.writeDouble(mLongitude);
+    }
+
+    public static final Creator<Station> CREATOR = new Creator<Station>() {
+        @Override
+        public Station createFromParcel(Parcel in) {
+            return new Station(in);
+        }
+
+        @Override
+        public Station[] newArray(int size) {
+            return new Station[size];
+        }
+    };
 }
