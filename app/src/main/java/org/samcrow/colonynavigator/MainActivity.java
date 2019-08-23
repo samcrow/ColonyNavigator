@@ -11,13 +11,13 @@ import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AlertDialog.Builder;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog.Builder;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
@@ -36,6 +36,7 @@ import org.mapsforge.map.android.view.MapView;
 import org.mapsforge.map.layer.LayerManager;
 import org.mapsforge.map.layer.cache.TileCache;
 import org.mapsforge.map.layer.renderer.TileRendererLayer;
+import org.mapsforge.map.model.IMapViewPosition;
 import org.mapsforge.map.model.MapViewPosition;
 import org.mapsforge.map.model.Model;
 import org.mapsforge.map.model.common.PreferencesFacade;
@@ -296,7 +297,7 @@ public class MainActivity extends AppCompatActivity implements
         // locationOverlay.enableMyLocation() gets called in onResume().
     }
 
-    private MapViewPosition initializePosition(MapViewPosition mvp) {
+    private IMapViewPosition initializePosition(IMapViewPosition mvp) {
         LatLong center = mvp.getCenter();
 
         if (center.equals(new LatLong(0, 0))) {
@@ -327,7 +328,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private TileRendererLayer createTileRendererLayer(
-            TileCache tileCache, MapViewPosition mapViewPosition,
+            TileCache tileCache, IMapViewPosition mapViewPosition,
             XmlRenderTheme renderTheme) throws IOException {
         TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache,
                 new MapFile(Storage.getResourceAsFile(this, R.raw.site)), mapViewPosition,

@@ -7,7 +7,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
 import android.widget.Toast;
 
 import org.samcrow.colonynavigator.R;

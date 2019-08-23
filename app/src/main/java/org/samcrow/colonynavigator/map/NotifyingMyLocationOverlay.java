@@ -7,7 +7,7 @@ import android.location.LocationListener;
 import org.mapsforge.core.graphics.Bitmap;
 import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.map.android.layer.MyLocationOverlay;
-import org.mapsforge.map.model.MapViewPosition;
+import org.mapsforge.map.model.IMapViewPosition;
 
 /**
  * A type of MyLocationOverlay that can notify a listener when it receives
@@ -20,14 +20,14 @@ public class NotifyingMyLocationOverlay extends MyLocationOverlay {
     private LocationListener listener;
 
     public NotifyingMyLocationOverlay(Context context,
-                                      MapViewPosition mapViewPosition, Bitmap bitmap,
+                                      IMapViewPosition mapViewPosition, Bitmap bitmap,
                                       Paint circleFill,
                                       Paint circleStroke) {
         super(context, mapViewPosition, bitmap, circleFill, circleStroke);
     }
 
     public NotifyingMyLocationOverlay(Context context,
-                                      MapViewPosition mapViewPosition, Bitmap bitmap) {
+                                      IMapViewPosition mapViewPosition, Bitmap bitmap) {
         super(context, mapViewPosition, bitmap);
     }
 

@@ -1,1 +1,1 @@
-include ':app', ':xbeeandroid', ':log4j-android', ':xbeenet', ':antchat', ':differentialgps'
+include ':app', ':differentialgps'
