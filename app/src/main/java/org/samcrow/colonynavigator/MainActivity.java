@@ -10,6 +10,7 @@ import android.database.SQLException;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -24,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import com.applantation.android.svg.SVG;
 import com.applantation.android.svg.SVGParseException;
@@ -49,6 +51,7 @@ import org.samcrow.colonynavigator.data4.ColonySelection;
 import org.samcrow.colonynavigator.data4.ColonySet;
 import org.samcrow.colonynavigator.data4.NewColony;
 import org.samcrow.colonynavigator.data4.NewColonyDatabase;
+import org.samcrow.colonynavigator.data4.NewColonyProvider;
 import org.samcrow.colonynavigator.map.ColonyMarker;
 import org.samcrow.colonynavigator.map.NotifyingMyLocationOverlay;
 import org.samcrow.colonynavigator.map.RouteLineLayer;
@@ -58,6 +61,7 @@ import org.samcrow.data.provider.MemoryCardDataProvider;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * The main activity
@@ -204,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements
         setUpMap();
 
         // Add colonies
-        provider = new MemoryCardDataProvider(this, Storage.getMemoryCard());
+        provider = new NewColonyProvider(this, Storage.getMemoryCard());
 
         final CoordinateTransformer transformer = CoordinateTransformer.getInstance();
         colonies = provider.getColonies();
@@ -279,6 +283,35 @@ public class MainActivity extends AppCompatActivity implements
         locationOverlay = new NotifyingMyLocationOverlay(this,
                 mapView.getModel().mapViewPosition,
                 AndroidGraphicFactory.convertToBitmap(getMyLocationDrawable()));
+
+        // Update coordinates when location changes
+        final TextView coordinatesView = (TextView) findViewById(R.id.coordinatesView);
+
+        locationOverlay.addLocationListener(new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+                // Convert to local coordinates
+                final PointF localCoords = CoordinateTransformer.getInstance()
+                        .toLocal(location.getLongitude(), location.getLatitude());
+                coordinatesView.setText(String.format(Locale.getDefault(), "%.0f, %.0f", localCoords.x, localCoords.y));
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String provider) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String provider) {
+
+            }
+        });
+
         layerManager.getLayers().add(locationOverlay);
         // locationOverlay.enableMyLocation() gets called in onResume().
     }

@@ -22,7 +22,7 @@ public class RouteLineLayer extends Polyline {
 
         this.locationLayer = location;
         // Set up location callback
-        locationLayer.setLocationListener(new LocationListener() {
+        locationLayer.addLocationListener(new LocationListener() {
 
             @Override
             public void onLocationChanged(Location location) {

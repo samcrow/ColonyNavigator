@@ -168,4 +168,11 @@ public class Colony extends Positioned {
     public interface ColonyChangeListener {
         void onColonyChanged();
     }
+
+    public static Colony fromNewColony(NewColony newColony) {
+        final Colony colony = new Colony(newColony.getName(), newColony.getX(), newColony.getY(), false);
+        colony.setAttribute("census.visited", true);
+        colony.setAttribute("census.active", true);
+        return colony;
+    }
 }

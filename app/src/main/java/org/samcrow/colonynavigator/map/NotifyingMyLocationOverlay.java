@@ -9,15 +9,18 @@ import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.map.android.layer.MyLocationOverlay;
 import org.mapsforge.map.model.MapViewPosition;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * A type of MyLocationOverlay that can notify a listener when it receives
+ * A type of MyLocationOverlay that can notify listeners when it receives
  * a location update
  *
  * @author samcrow
  */
 public class NotifyingMyLocationOverlay extends MyLocationOverlay {
 
-    private LocationListener listener;
+    private List<LocationListener> listeners = new ArrayList<>();
 
     public NotifyingMyLocationOverlay(Context context,
                                       MapViewPosition mapViewPosition, Bitmap bitmap,
@@ -31,19 +34,18 @@ public class NotifyingMyLocationOverlay extends MyLocationOverlay {
         super(context, mapViewPosition, bitmap);
     }
 
-    public void setLocationListener(LocationListener newListener) {
-        listener = newListener;
+    public void addLocationListener(LocationListener newListener) {
+        listeners.add(newListener);
     }
 
     @Override
     public void onLocationChanged(Location newLocation) {
         super.onLocationChanged(newLocation);
 
-        // Notify the additional listener
-        if (listener != null) {
+        // Notify the listeners
+        for (LocationListener listener : listeners) {
             listener.onLocationChanged(newLocation);
         }
-
     }
 
 

@@ -7,8 +7,8 @@ android {
         applicationId "org.samcrow.colonynavigator"
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 2
-        versionName "1.1"
+        versionCode 3
+        versionName "1.2"
     }
     buildTypes {
         release {
@@ -42,4 +42,5 @@ dependencies {
     implementation 'org.mapsforge:svg-android:0.4.3'
     androidTestImplementation 'junit:junit:4.12'
     implementation 'commons-io:commons-io:2.4'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
 }
