@@ -1,7 +1,11 @@
 package org.samcrow.colonynavigator;
 
 import android.content.Context;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
+import android.support.v4.provider.DocumentFile;
+import android.util.Log;
 
 import org.apache.commons.io.IOUtils;
 
@@ -78,6 +82,70 @@ public class Storage {
         if (dir.exists() && dir.isDirectory()) {
             return dir;
         }
+        dir = new File("/storage/22C1-11F5");
+        if (dir.exists() && dir.isDirectory()) {
+            return dir;
+        }
         return Environment.getExternalStorageDirectory();
+    }
+
+    public static FileUris getMemoryCardUris(Context ctx) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            final String[] storageNames = {
+                    "extSdCard",
+                    "6133-3731",
+                    "1C45-180D",
+                    "22C1-11F5"
+            };
+            for (String storageName : storageNames) {
+                final Uri csvUri = makeStorageUri(storageName, "colonies.csv");
+                final Uri jsonUri = makeStorageUri(storageName, "colonies.json");
+                if (fileExistsAtUri(ctx, csvUri) || fileExistsAtUri(ctx, jsonUri)) {
+                    return new FileUris(csvUri, jsonUri);
+                }
+            }
+            return null;
+        } else {
+            throw new UnsupportedOperationException("Pre-KitKat URIs not yet implemented");
+        }
+    }
+
+    private static Uri makeStorageUri(String storageName, String fileName) {
+        return Uri.parse(String.format("content://com.android.externalstorage.documents/tree/%s%%3A/document/%s%%3A%s", storageName, storageName, fileName));
+    }
+
+    private static boolean fileExistsAtUri(Context ctx, Uri uri) {
+        final DocumentFile document = DocumentFile.fromSingleUri(ctx, uri);
+        if (document != null) {
+            return document.exists() && document.isFile();
+        } else {
+            return false;
+        }
+    }
+
+    public static class FileUris {
+        private final Uri mCsv;
+        private final Uri mJson;
+
+        public FileUris(Uri csv, Uri json) {
+            mCsv = csv;
+            mJson = json;
+        }
+
+        public Uri getCsv() {
+            return mCsv;
+        }
+
+        public Uri getJson() {
+            return mJson;
+        }
+
+        @Override
+        public String toString() {
+            return "FileUris{" +
+                    "csv=" + mCsv +
+                    ", json=" + mJson +
+                    '}';
+        }
     }
 }

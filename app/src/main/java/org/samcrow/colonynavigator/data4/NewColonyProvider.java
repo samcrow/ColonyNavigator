@@ -2,10 +2,10 @@ package org.samcrow.colonynavigator.data4;
 
 import android.content.Context;
 
+import org.samcrow.colonynavigator.Storage;
 import org.samcrow.data.provider.ColonyProvider;
 import org.samcrow.data.provider.MemoryCardDataProvider;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -24,9 +24,9 @@ public class NewColonyProvider implements ColonyProvider {
      */
     private final MemoryCardDataProvider mMemoryCard;
 
-    public NewColonyProvider(Context context, File cardPath) throws IOException {
+    public NewColonyProvider(Context context, Storage.FileUris uris) throws IOException {
         mDatabase = new NewColonyDatabase(context);
-        mMemoryCard = new MemoryCardDataProvider(context, cardPath);
+        mMemoryCard = new MemoryCardDataProvider(context, uris);
     }
 
     @Override

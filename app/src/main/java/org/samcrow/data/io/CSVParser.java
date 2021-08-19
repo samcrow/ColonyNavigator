@@ -20,14 +20,19 @@ public class CSVParser implements Parser<Colony> {
      */
     @Override
     public Colony parseOne(String line) {
+        return parseOneStatic(line);
+    }
+
+
+    protected static Colony parseOneStatic(String line) {
         line = line.trim();
         //Split the line into parts separated by commas
         String[] parts = line.split("\\s*,\\s*");
         try {
 
             String colonyId = parts[0];
-            int x = Integer.valueOf(parts[1]);
-            int y = Integer.valueOf(parts[2]);
+            int x = Integer.parseInt(parts[1]);
+            int y = Integer.parseInt(parts[2]);
 
             //Ignore active, assume each colony is inactive for the census
             //			//Active if part 3 is A (case insensitive), otherwise false
@@ -49,6 +54,11 @@ public class CSVParser implements Parser<Colony> {
      */
     @Override
     public String encodeOne(Colony colony) {
+        return encodeOneStatic(colony);
+    }
+
+
+    protected static String encodeOneStatic(Colony colony) {
 
         int xInt = (int) Math.round(colony.getX());
         int yInt = (int) Math.round(colony.getY());

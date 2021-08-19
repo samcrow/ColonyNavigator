@@ -56,7 +56,6 @@ import org.samcrow.colonynavigator.map.ColonyMarker;
 import org.samcrow.colonynavigator.map.NotifyingMyLocationOverlay;
 import org.samcrow.colonynavigator.map.RouteLineLayer;
 import org.samcrow.data.provider.ColonyProvider;
-import org.samcrow.data.provider.MemoryCardDataProvider;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -80,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements
      * The request code used for permissions
      */
     private static final int PERMISSION_REQUEST = 30223;
+    private static final int EXPORT_FILE_REQUEST = 30224;
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private PreferencesFacade preferencesFacade;
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements
     /**
      * The current selected colony
      */
-    private ColonySelection selection = new ColonySelection();
+    private final ColonySelection selection = new ColonySelection();
 
     /**
      * If the application has been granted all permissions and has completed initialization
@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements
                 postPermissionSetup();
             } else {
                 // Request permission
-                ActivityCompat.requestPermissions(this, missingPermissions.toArray(new String[missingPermissions.size()]), PERMISSION_REQUEST);
+                ActivityCompat.requestPermissions(this, missingPermissions.toArray(new String[0]), PERMISSION_REQUEST);
             }
 
 
@@ -208,7 +208,8 @@ public class MainActivity extends AppCompatActivity implements
         setUpMap();
 
         // Add colonies
-        provider = new NewColonyProvider(this, Storage.getMemoryCard());
+        final Storage.FileUris uris = Storage.getMemoryCardUris(this);
+        provider = new NewColonyProvider(this, uris);
 
         final CoordinateTransformer transformer = CoordinateTransformer.getInstance();
         colonies = provider.getColonies();
@@ -497,13 +498,37 @@ public class MainActivity extends AppCompatActivity implements
                 final NewColonyListDialogFragment dialog = new NewColonyListDialogFragment();
                 final Bundle args = new Bundle();
                 args.putParcelableArray("colonies",
-                        colonies.toArray(new NewColony[colonies.size()]));
+                        colonies.toArray(new NewColony[0]));
                 dialog.setArguments(args);
                 dialog.show(getSupportFragmentManager(), "new colony list");
 
                 return true;
             }
         });
+
+        final MenuItem exportcoloniesItem = menu.findItem(R.id.export_colonies_item);
+        exportcoloniesItem.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                // https://stackoverflow.com/questions/43066117/android-m-write-to-sd-card-permission-denied
+//                startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), EXPORT_FILE_REQUEST);
+
+                final Storage.FileUris uris = Storage.getMemoryCardUris(MainActivity.this);
+                Log.i(TAG, "Card URIs " + uris);
+
+//                final Uri jsonUri = Uri.parse("content://com.android.externalstorage.documents/tree/22C1-11F5%3A/document/22C1-11F5%3Acolonies.json");
+//                try {
+//                    final OutputStream jsonOut = getContentResolver().openOutputStream(jsonUri);
+//                    jsonOut.write(new byte[]{(byte) '{', (byte) '}'});
+//                    Log.i(TAG, "Wrote colonies.json using content resolver");
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+
+                return true;
+            }
+        });
+
         return true;
     }
 

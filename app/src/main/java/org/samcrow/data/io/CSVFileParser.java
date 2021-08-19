@@ -8,7 +8,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintStream;
 
 /**
@@ -29,14 +31,12 @@ public class CSVFileParser extends CSVParser implements FileParser {
         this.file = file;
     }
 
-    @Override
-    public ColonySet parse() throws IOException {
-
+    public static ColonySet parseFromStream(InputStream in) throws IOException {
         ColonySet colonies = new ColonySet();
 
         try {
             BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(new FileInputStream(file)));
+                    new InputStreamReader(in));
 
             //Parse each line
             while (true) {
@@ -45,7 +45,7 @@ public class CSVFileParser extends CSVParser implements FileParser {
                     break;
                 }
 
-                Colony colony = parseOne(line);
+                Colony colony = parseOneStatic(line);
                 //colony might be null if the line couldn't be parsed.
                 //Add it only if it was parsed successfully.
                 if (colony != null) {
@@ -62,6 +62,19 @@ public class CSVFileParser extends CSVParser implements FileParser {
         return colonies;
     }
 
+    public static void writeToStream(OutputStream out, Iterable<? extends Colony> values) throws IOException {
+        PrintStream stream = new PrintStream(out);
+
+        for (Colony colony : values) {
+            stream.println(encodeOneStatic(colony));
+        }
+    }
+
+    @Override
+    public ColonySet parse() throws IOException {
+        return parseFromStream(new FileInputStream(this.file));
+    }
+
     @Override
     public void write(Iterable<? extends Colony> values) throws IOException {
         //Delete the file, if it exists, so that it can be rewritten from the beginning
@@ -73,12 +86,11 @@ public class CSVFileParser extends CSVParser implements FileParser {
 
         try {
             PrintStream stream = new PrintStream(file);
-
-            for (Colony colony : values) {
-                stream.println(encodeOne(colony));
+            try {
+                writeToStream(stream, values);
+            } finally {
+                stream.close();
             }
-
-            stream.close();
 
         } catch (FileNotFoundException e) {
             throw new IOException(e);

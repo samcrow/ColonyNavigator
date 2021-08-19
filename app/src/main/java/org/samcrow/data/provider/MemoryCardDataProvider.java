@@ -8,9 +8,12 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.provider.DocumentFile;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.samcrow.colonynavigator.R;
+import org.samcrow.colonynavigator.Storage;
 import org.samcrow.colonynavigator.data4.Colony;
 import org.samcrow.colonynavigator.data4.ColonySet;
 import org.samcrow.data.io.CSVFileParser;
@@ -20,6 +23,8 @@ import org.samcrow.data.io.JSONFileParser;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -35,80 +40,76 @@ import java.util.concurrent.ExecutionException;
  */
 public class MemoryCardDataProvider implements ColonyProvider {
 
-    /**
-     * The name, including the file extension, of the CSV file to use
-     */
-    private static final String kCsvFileName = "/colonies.csv";
-    /**
-     * The name, including the file extension, of the JSON file to use
-     */
-    private static final String kJsonFileName = "/colonies.json";
-    private final File cardPath;
+    private final Storage.FileUris mUris;
     private final Context context;
     private ColonySet colonies = new ColonySet();
 
-    public MemoryCardDataProvider(Context context, File cardPath) throws IOException {
+    public MemoryCardDataProvider(Context context, Storage.FileUris uris) throws IOException {
         this.context = context;
-        this.cardPath = cardPath;
-        //Create the directory if it doesn't already exist
-        cardPath.mkdirs();
+        mUris = uris;
 
-        File csvFile = new File(cardPath.getAbsolutePath() + kCsvFileName);
-        File jsonFile = new File(cardPath.getAbsolutePath() + kJsonFileName);
+        final DocumentFile csvFile = DocumentFile.fromSingleUri(context, uris.getCsv());
+        final DocumentFile jsonFile = DocumentFile.fromSingleUri(context, uris.getJson());
 
         //Case 1: Application hasn't been run before
         //colonies.csv exists, colonies.json does not
         if (csvFile.exists() && !jsonFile.exists()) {
 
             //Read the CSV and get the colonies into memory
-            FileParser csvParser = new CSVFileParser(csvFile);
-            colonies = csvParser.parse();
+            try (InputStream csvStream = context.getContentResolver().openInputStream(uris.getCsv())) {
+                colonies = CSVFileParser.parseFromStream(csvStream);
+            }
 
             //Write the JSON file from memory
-            FileParser jsonParser = new JSONFileParser(jsonFile);
-            jsonParser.write(colonies);
+            try (OutputStream jsonStream = context.getContentResolver().openOutputStream(uris.getJson())) {
+                JSONFileParser.writeToStream(jsonStream, colonies);
+            }
         }
 
         //Case 2: both files exist
         else if (csvFile.exists() && jsonFile.exists()) {
 
 
-            FileParser csvParser = new CSVFileParser(csvFile);
-            ColonySet csvColonies = csvParser.parse();
-
-            //Write the JSON file from memory
-            FileParser jsonParser = new JSONFileParser(jsonFile);
-            ColonySet jsonColonies = jsonParser.parse();
+            // Read both CSV and JSON files
+            ColonySet csvColonies;
+            try (InputStream csvStream = context.getContentResolver().openInputStream(uris.getCsv())) {
+                csvColonies = CSVFileParser.parseFromStream(csvStream);
+            }
+            ColonySet jsonColonies;
+            try (InputStream jsonStream = context.getContentResolver().openInputStream(uris.getJson())) {
+                jsonColonies = JSONFileParser.parseFromStream(jsonStream);
+            }
 
             //Put into memory the colonies from the CSV updated with colonies from the JSON file
             colonies = extend(csvColonies, jsonColonies);
 
             //Write the JSON file from memory
-            jsonParser.write(colonies);
+            try (OutputStream jsonStream = context.getContentResolver().openOutputStream(uris.getJson())) {
+                JSONFileParser.writeToStream(jsonStream, colonies);
+            }
         }
 
         //Cases 3: CSV doesn't exist, JSON does
         else if (!csvFile.exists() && jsonFile.exists()) {
             //Use the JSON file
-            FileParser jsonParser = new JSONFileParser(jsonFile);
-            colonies.clear();
-            colonies.putAll(jsonParser.parse());
+            try (InputStream jsonStream = context.getContentResolver().openInputStream(uris.getJson())) {
+                colonies = JSONFileParser.parseFromStream(jsonStream);
+            }
         } else {
-            String message = "Neither " + csvFile.getAbsolutePath() + " or " + jsonFile.getAbsolutePath() + " exists! Failed to get colonies from the memory card.";
-            System.err.println(message);
+            Log.e("MemoryCardDataProvider", "Neither CSV nor JSON file exists");
         }
 
 
         //Look for focus_colonies.txt
-        File focusFile = new File(cardPath, "focus_colonies.txt");
-        if (focusFile.exists() && focusFile.canRead()) {
-            try {
-                new FocusColonyFinder(focusFile, colonies).updateColonies();
-            } catch (IOException e) {
-                System.err.println("Could not read focus colonies file");
-                e.printStackTrace();
-            }
-        }
+//        File focusFile = new File(cardPath, "focus_colonies.txt");
+//        if (focusFile.exists() && focusFile.canRead()) {
+//            try {
+//                new FocusColonyFinder(focusFile, colonies).updateColonies();
+//            } catch (IOException e) {
+//                System.err.println("Could not read focus colonies file");
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     private static Throwable ultimateCause(Throwable ex) {
@@ -204,16 +205,14 @@ public class MemoryCardDataProvider implements ColonyProvider {
 
         @Override
         public Void doInBackground(Void... args) {
-            File file = new File(cardPath + kJsonFileName);
 
             // Check permissions
             if (ContextCompat.checkSelfPermission(context, permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 throw new IllegalStateException("No permission to write external storage");
             }
 
-            FileParser parser = new JSONFileParser(file);
-            try {
-                parser.write(colonies);
+            try (OutputStream jsonStream = context.getContentResolver().openOutputStream(mUris.getJson())) {
+                JSONFileParser.writeToStream(jsonStream, colonies);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

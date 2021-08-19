@@ -35,5 +35,6 @@
     <string name="no_location_available">No location available</string>
     <string name="wait_for_location">Please wait for the GPS location to be acquired</string>
     <string name="colony_save_failed">Could not save colony</string>
+    <string name="export_colonies">Export colonies</string>
 
 </resources>

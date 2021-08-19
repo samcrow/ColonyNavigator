@@ -31,7 +31,6 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation project(':xbeeandroid')
     implementation 'com.android.support:appcompat-v7:25.4.0'
     implementation 'joda-time:joda-time:2.9.2'
     implementation 'org.mapsforge:mapsforge-core:0.8.0'
