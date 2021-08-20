@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.support.v4.provider.DocumentFile;
-import android.util.Log;
 
 import org.apache.commons.io.IOUtils;
 
@@ -33,20 +32,9 @@ public class Storage {
         if (storedFile.exists()) {
             return storedFile;
         } else {
-            InputStream stream = null;
-            OutputStream fileOut = null;
-            try {
-                stream = ctx.getResources().openRawResource(resid);
-                fileOut = new FileOutputStream(storedFile);
+            try (InputStream stream = ctx.getResources().openRawResource(resid); OutputStream fileOut = new FileOutputStream(storedFile)) {
                 IOUtils.copy(stream, fileOut);
                 return storedFile;
-            } finally {
-                if (stream != null) {
-                    stream.close();
-                }
-                if (fileOut != null) {
-                    fileOut.close();
-                }
             }
         }
     }
@@ -100,8 +88,9 @@ public class Storage {
             for (String storageName : storageNames) {
                 final Uri csvUri = makeStorageUri(storageName, "colonies.csv");
                 final Uri jsonUri = makeStorageUri(storageName, "colonies.json");
+                final Uri focusColoniesUri = makeStorageUri(storageName, "focus_colonies.txt");
                 if (fileExistsAtUri(ctx, csvUri) || fileExistsAtUri(ctx, jsonUri)) {
-                    return new FileUris(csvUri, jsonUri);
+                    return new FileUris(csvUri, jsonUri, focusColoniesUri);
                 }
             }
             return null;
@@ -126,10 +115,12 @@ public class Storage {
     public static class FileUris {
         private final Uri mCsv;
         private final Uri mJson;
+        private final Uri mFocusColonies;
 
-        public FileUris(Uri csv, Uri json) {
+        public FileUris(Uri csv, Uri json, Uri focusColonies) {
             mCsv = csv;
             mJson = json;
+            mFocusColonies = focusColonies;
         }
 
         public Uri getCsv() {
@@ -140,11 +131,16 @@ public class Storage {
             return mJson;
         }
 
+        public Uri getFocusColonies() {
+            return mFocusColonies;
+        }
+
         @Override
         public String toString() {
             return "FileUris{" +
                     "csv=" + mCsv +
                     ", json=" + mJson +
+                    ", focusColonies=" + mFocusColonies +
                     '}';
         }
     }

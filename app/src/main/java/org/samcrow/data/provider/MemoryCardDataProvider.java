@@ -101,15 +101,14 @@ public class MemoryCardDataProvider implements ColonyProvider {
 
 
         //Look for focus_colonies.txt
-//        File focusFile = new File(cardPath, "focus_colonies.txt");
-//        if (focusFile.exists() && focusFile.canRead()) {
-//            try {
-//                new FocusColonyFinder(focusFile, colonies).updateColonies();
-//            } catch (IOException e) {
-//                System.err.println("Could not read focus colonies file");
-//                e.printStackTrace();
-//            }
-//        }
+        final DocumentFile focusColoniesDocument = DocumentFile.fromSingleUri(context, uris.getFocusColonies());
+        if (focusColoniesDocument.exists() && focusColoniesDocument.canRead()) {
+            try (final InputStream in = context.getContentResolver().openInputStream(uris.getFocusColonies())) {
+                new FocusColonyFinder(in, colonies).updateColonies();
+            } catch (IOException e) {
+                Log.e("MemoryCardDataProvider", "Can't read focus colonies file", e);
+            }
+        }
     }
 
     private static Throwable ultimateCause(Throwable ex) {

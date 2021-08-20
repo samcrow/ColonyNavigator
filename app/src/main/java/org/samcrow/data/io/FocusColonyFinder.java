@@ -7,6 +7,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * Reads colony numbers, one per line, from the a file and marks
@@ -17,9 +19,9 @@ import java.io.IOException;
 public class FocusColonyFinder {
 
     private final ColonySet colonies;
-    private final File focusFile;
+    private final InputStream focusFile;
 
-    public FocusColonyFinder(File focusFile, ColonySet colonies) {
+    public FocusColonyFinder(InputStream focusFile, ColonySet colonies) {
         this.focusFile = focusFile;
         this.colonies = colonies;
     }
@@ -28,10 +30,7 @@ public class FocusColonyFinder {
      * Marks required colonies from the colony set as focused
      */
     public void updateColonies() throws IOException {
-
-
-        BufferedReader reader = new BufferedReader(new FileReader(focusFile));
-        try {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(focusFile))) {
             while (true) {
                 String line = reader.readLine();
                 if (line == null) {
@@ -47,8 +46,6 @@ public class FocusColonyFinder {
                     colony.setAttribute("census.focus", true);
                 }
             }
-        } finally {
-            reader.close();
         }
 
     }

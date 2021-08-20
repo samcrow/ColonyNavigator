@@ -3,11 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ColonyNavigator.iml" filepath="$PROJECT_DIR$/ColonyNavigator.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/antchat/ColonyNavigator.antchat.iml" filepath="$PROJECT_DIR$/.idea/modules/antchat/ColonyNavigator.antchat.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/ColonyNavigator.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/ColonyNavigator.app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/log4j-android/ColonyNavigator.log4j-android.iml" filepath="$PROJECT_DIR$/.idea/modules/log4j-android/ColonyNavigator.log4j-android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/xbeeandroid/ColonyNavigator.xbeeandroid.iml" filepath="$PROJECT_DIR$/.idea/modules/xbeeandroid/ColonyNavigator.xbeeandroid.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/xbeenet/ColonyNavigator.xbeenet.iml" filepath="$PROJECT_DIR$/.idea/modules/xbeenet/ColonyNavigator.xbeenet.iml" />
     </modules>
   </component>
 </project>
