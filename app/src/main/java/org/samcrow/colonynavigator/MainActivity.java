@@ -506,29 +506,6 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        final MenuItem exportcoloniesItem = menu.findItem(R.id.export_colonies_item);
-        exportcoloniesItem.setOnMenuItemClickListener(new OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
-                // https://stackoverflow.com/questions/43066117/android-m-write-to-sd-card-permission-denied
-//                startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), EXPORT_FILE_REQUEST);
-
-                final Storage.FileUris uris = Storage.getMemoryCardUris(MainActivity.this);
-                Log.i(TAG, "Card URIs " + uris);
-
-//                final Uri jsonUri = Uri.parse("content://com.android.externalstorage.documents/tree/22C1-11F5%3A/document/22C1-11F5%3Acolonies.json");
-//                try {
-//                    final OutputStream jsonOut = getContentResolver().openOutputStream(jsonUri);
-//                    jsonOut.write(new byte[]{(byte) '{', (byte) '}'});
-//                    Log.i(TAG, "Wrote colonies.json using content resolver");
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-
-                return true;
-            }
-        });
-
         return true;
     }
 

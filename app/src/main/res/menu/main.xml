@@ -35,9 +35,4 @@
         android:icon="@drawable/ic_menu_black_24dp"
         app:showAsAction="ifRoom"/>
 
-    <item
-        android:id="@+id/export_colonies_item"
-        android:title="@string/export_colonies"
-        app:showAsAction="never"/>
-
 </menu>

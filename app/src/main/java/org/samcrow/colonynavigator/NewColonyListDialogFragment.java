@@ -20,8 +20,6 @@ import org.samcrow.colonynavigator.data4.NewColony;
 import org.samcrow.colonynavigator.data4.NewColonyWriteTask;
 import org.samcrow.colonynavigator.data4.NewColonyWriteTask.Params;
 
-import java.io.File;
-
 /**
  * Displays a list of {@link org.samcrow.colonynavigator.data4.NewColony NewColonies}
  */
@@ -51,9 +49,10 @@ public class NewColonyListDialogFragment extends AppCompatDialogFragment {
         exportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                final Storage.FileUris uris = Storage.getMemoryCardUris(view.getContext());
+                assert uris != null;
                 final NewColonyWriteTask task = new NewColonyWriteTask(view.getContext());
-                task.execute(new Params(colonies,
-                        new File(Storage.getMemoryCard().getAbsolutePath() + "/new_colonies.csv")));
+                task.execute(new Params(colonies, uris.getNewColonies()));
             }
         });
 

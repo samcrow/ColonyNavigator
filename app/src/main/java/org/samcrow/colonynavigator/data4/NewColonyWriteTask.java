@@ -2,14 +2,15 @@ package org.samcrow.colonynavigator.data4;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.v4.provider.DocumentFile;
 import android.widget.Toast;
 
 import org.samcrow.colonynavigator.data4.NewColonyWriteTask.Params;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.concurrent.ExecutionException;
 
@@ -26,11 +27,13 @@ public class NewColonyWriteTask extends AsyncTask<Params, Void, Void> {
 
     @Override
     protected Void doInBackground(Params... params) {
-        final File file = params[0].getDestination();
+        final Uri destination = params[0].getDestination();
+
+        final DocumentFile file = DocumentFile.fromSingleUri(context, destination);
+
         final NewColony[] colonies = params[0].getColonies();
-        PrintStream stream = null;
-        try {
-            stream = new PrintStream(new FileOutputStream(file));
+        try (OutputStream out = context.getContentResolver().openOutputStream(destination)) {
+            final PrintStream stream = new PrintStream(out);
             stream.println("Name,X,Y,Notes");
             for (NewColony colony : colonies) {
                 // Replace line breaks with spaces
@@ -47,12 +50,8 @@ public class NewColonyWriteTask extends AsyncTask<Params, Void, Void> {
                 stream.println('"');
 
             }
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
-        } finally {
-            if (stream != null) {
-                stream.close();
-            }
         }
         return null;
     }
@@ -62,7 +61,7 @@ public class NewColonyWriteTask extends AsyncTask<Params, Void, Void> {
         try {
             get();
             Toast.makeText(context, "New colonies saved", Toast.LENGTH_SHORT).show();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignored) {
 
         } catch (ExecutionException e) {
             final Throwable cause = e.getCause();
@@ -83,9 +82,9 @@ public class NewColonyWriteTask extends AsyncTask<Params, Void, Void> {
 
     public static class Params {
         private final NewColony[] colonies;
-        private final File destination;
+        private final Uri destination;
 
-        public Params(NewColony[] colonies, File destination) {
+        public Params(NewColony[] colonies, Uri destination) {
             this.colonies = colonies;
             this.destination = destination;
         }
@@ -94,7 +93,7 @@ public class NewColonyWriteTask extends AsyncTask<Params, Void, Void> {
             return colonies;
         }
 
-        public File getDestination() {
+        public Uri getDestination() {
             return destination;
         }
     }

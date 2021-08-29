@@ -89,8 +89,9 @@ public class Storage {
                 final Uri csvUri = makeStorageUri(storageName, "colonies.csv");
                 final Uri jsonUri = makeStorageUri(storageName, "colonies.json");
                 final Uri focusColoniesUri = makeStorageUri(storageName, "focus_colonies.txt");
+                final Uri newColoniesUri = makeStorageUri(storageName, "new_colonies.csv");
                 if (fileExistsAtUri(ctx, csvUri) || fileExistsAtUri(ctx, jsonUri)) {
-                    return new FileUris(csvUri, jsonUri, focusColoniesUri);
+                    return new FileUris(csvUri, jsonUri, focusColoniesUri, newColoniesUri);
                 }
             }
             return null;
@@ -116,11 +117,13 @@ public class Storage {
         private final Uri mCsv;
         private final Uri mJson;
         private final Uri mFocusColonies;
+        private final Uri mNewColonies;
 
-        public FileUris(Uri csv, Uri json, Uri focusColonies) {
+        public FileUris(Uri csv, Uri json, Uri focusColonies, Uri newColonies) {
             mCsv = csv;
             mJson = json;
             mFocusColonies = focusColonies;
+            mNewColonies = newColonies;
         }
 
         public Uri getCsv() {
@@ -135,12 +138,17 @@ public class Storage {
             return mFocusColonies;
         }
 
+        public Uri getNewColonies() {
+            return mNewColonies;
+        }
+
         @Override
         public String toString() {
             return "FileUris{" +
                     "csv=" + mCsv +
                     ", json=" + mJson +
                     ", focusColonies=" + mFocusColonies +
+                    ", newColonies=" + mNewColonies +
                     '}';
         }
     }
