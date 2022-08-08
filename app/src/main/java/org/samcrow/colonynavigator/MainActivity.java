@@ -3,6 +3,7 @@ package org.samcrow.colonynavigator;
 import android.Manifest.permission;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
@@ -11,10 +12,16 @@ import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationListener;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.provider.DocumentsContract;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AlertDialog.Builder;
 import android.support.v7.app.AppCompatActivity;
@@ -59,6 +66,7 @@ import org.samcrow.data.provider.ColonyProvider;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -79,9 +87,12 @@ public class MainActivity extends AppCompatActivity implements
      * The request code used for permissions
      */
     private static final int PERMISSION_REQUEST = 30223;
-    private static final int EXPORT_FILE_REQUEST = 30224;
+    private static final int CARD_TREE_REQUEST = 30225;
     private static final String TAG = MainActivity.class.getSimpleName();
-
+    /**
+     * The current selected colony
+     */
+    private final ColonySelection selection = new ColonySelection();
     private PreferencesFacade preferencesFacade;
     private MapView mapView;
     private LayerManager layerManager;
@@ -89,11 +100,6 @@ public class MainActivity extends AppCompatActivity implements
     private ColonyProvider provider;
     private ColonySet colonies;
     private NewColonyDatabase newColonyDB;
-    /**
-     * The current selected colony
-     */
-    private final ColonySelection selection = new ColonySelection();
-
     /**
      * If the application has been granted all permissions and has completed initialization
      */
@@ -202,13 +208,96 @@ public class MainActivity extends AppCompatActivity implements
 
     /**
      * Does setup tasks. Assumes that all necessary permissions have been granted.
+     *
      * @throws IOException if an error occurs
      */
     private void postPermissionSetup() throws IOException {
         setUpMap();
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Need to get permission to read and write memory card
+            final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+            final String cardUriString = preferences.getString("card_uri", null);
+            final Uri cardUri = cardUriString != null ? Uri.parse(cardUriString) : null;
+
+            if (cardUri == null) {
+                // Ask for permission and for the user to select the card
+                openCardFolder(null);
+            } else {
+                // Check if we have permission to access the URI
+                final DocumentFile cardFile = DocumentFile.fromTreeUri(this, cardUri);
+                Log.i(TAG, "Card URI " + cardUri + ": exists " + cardFile.exists() + " canRead " + cardFile.canRead() + " canWrite " + cardFile.canWrite() + " files " + Arrays.toString(cardFile.listFiles()));
+                if (cardFile.exists() && cardFile.canRead() && cardFile.canWrite()) {
+                    // Already have permission, don't need to ask
+                    postCardPermissionSetup(cardUri);
+                } else {
+                    // Ask for permission
+                    openCardFolder(cardUri);
+                }
+            }
+        } else {
+            // Earlier version of Android, no permission needed
+            postCardPermissionSetup(null);
+        }
+    }
+
+    private void openCardFolder(@Nullable final Uri initialUri) {
+        new Builder(this).setTitle(R.string.memory_card_access)
+                .setMessage(R.string.choose_memory_card)
+                .setPositiveButton(R.string.button_continue, new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        final Intent cardIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                        // Using initialUri requires DocumentsContract.EXTRA_INITIAL_URI
+                        // , added in API level 26
+                        startActivityForResult(cardIntent, CARD_TREE_REQUEST);
+                    }
+                })
+                .setCancelable(false)
+                .show();
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CARD_TREE_REQUEST && resultCode == RESULT_OK && data != null) {
+            final Uri cardUri = data.getData();
+            if (cardUri != null) {
+                Log.i(TAG, "Opened memory card " + cardUri);
+                final DocumentFile cardFile = DocumentFile.fromTreeUri(this, cardUri);
+                Log.i(TAG, "Opened card URI " + cardUri + ": exists " + cardFile.exists() + " canRead " + cardFile.canRead() + " canWrite " + cardFile.canWrite() + " files " + Arrays.toString(cardFile.listFiles()));
+                try {
+                    final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+                    preferences.edit().putString("card_uri", cardUri.toString()).apply();
+
+                    postCardPermissionSetup(cardUri);
+                } catch (Exception ex) {
+                    // Show a dialog, then quit
+                    Log.e(TAG, "Exception", ex);
+                    new AlertDialog.Builder(MainActivity.this)
+                            .setTitle(ex.getClass().getSimpleName())
+                            .setMessage(ex.getMessage())
+                            .setNeutralButton("Quit", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // Close this activity
+                                    MainActivity.this.finish();
+                                }
+                            })
+                            .show();
+                }
+            }
+        }
+    }
+
+    private void postCardPermissionSetup(@Nullable Uri chosenUri) throws IOException {
         // Add colonies
-        final Storage.FileUris uris = Storage.getMemoryCardUris(this);
+        final Storage.FileUris uris = Storage.getMemoryCardUris(this, chosenUri);
+        if (uris == null) {
+            throw new IllegalStateException("Can't find memory card");
+        }
+        Log.i(TAG, "Found storage URIS " + uris);
         provider = new NewColonyProvider(this, uris);
 
         final CoordinateTransformer transformer = CoordinateTransformer.getInstance();
@@ -284,35 +373,6 @@ public class MainActivity extends AppCompatActivity implements
         locationOverlay = new NotifyingMyLocationOverlay(this,
                 mapView.getModel().mapViewPosition,
                 AndroidGraphicFactory.convertToBitmap(getMyLocationDrawable()));
-
-        // Update coordinates when location changes
-        final TextView coordinatesView = (TextView) findViewById(R.id.coordinatesView);
-
-        locationOverlay.addLocationListener(new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                // Convert to local coordinates
-                final PointF localCoords = CoordinateTransformer.getInstance()
-                        .toLocal(location.getLongitude(), location.getLatitude());
-                coordinatesView.setText(String.format(Locale.getDefault(), "%.0f, %.0f", localCoords.x, localCoords.y));
-            }
-
-            @Override
-            public void onStatusChanged(String provider, int status, Bundle extras) {
-
-            }
-
-            @Override
-            public void onProviderEnabled(String provider) {
-
-            }
-
-            @Override
-            public void onProviderDisabled(String provider) {
-
-            }
-        });
-
         layerManager.getLayers().add(locationOverlay);
         // locationOverlay.enableMyLocation() gets called in onResume().
     }

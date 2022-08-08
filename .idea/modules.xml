@@ -4,6 +4,9 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ColonyNavigator.iml" filepath="$PROJECT_DIR$/ColonyNavigator.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/ColonyNavigator.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/ColonyNavigator.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/ColonyNavigator.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/ColonyNavigator.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/ColonyNavigator.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/ColonyNavigator.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/ColonyNavigator.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/ColonyNavigator.app.unitTest.iml" />
     </modules>
   </component>
 </project>

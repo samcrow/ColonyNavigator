@@ -36,5 +36,8 @@
     <string name="wait_for_location">Please wait for the GPS location to be acquired</string>
     <string name="colony_save_failed">Could not save colony</string>
     <string name="export_colonies">Export colonies</string>
+    <string name="memory_card_access">Memory card access</string>
+    <string name="choose_memory_card">Choose the memory card where this application should read and write files</string>
+    <string name="button_continue">Continue</string>
 
 </resources>

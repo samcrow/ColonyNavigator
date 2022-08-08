@@ -11,17 +11,6 @@
          TextureView, etc.
     -->
 
-    <TextView
-            android:id="@+id/coordinatesView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            app:layout_constraintBottom_toTopOf="@+id/map_view_frame"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
     <FrameLayout
             android:id="@+id/map_view_frame"
             android:layout_width="0dp"
@@ -29,7 +18,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/coordinatesView">
+            app:layout_constraintTop_toTopOf="parent">
 
     </FrameLayout>
 

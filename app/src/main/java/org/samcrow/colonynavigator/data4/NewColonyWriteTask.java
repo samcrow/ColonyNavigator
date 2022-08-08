@@ -2,16 +2,16 @@ package org.samcrow.colonynavigator.data4;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.provider.DocumentFile;
 import android.widget.Toast;
 
+import org.samcrow.colonynavigator.Storage;
 import org.samcrow.colonynavigator.data4.NewColonyWriteTask.Params;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -27,13 +27,17 @@ public class NewColonyWriteTask extends AsyncTask<Params, Void, Void> {
 
     @Override
     protected Void doInBackground(Params... params) {
-        final Uri destination = params[0].getDestination();
-
-        final DocumentFile file = DocumentFile.fromSingleUri(context, destination);
+        final Storage.FileUris uris = params[0].getUris();
+        DocumentFile destination = uris.getNewColonies();
+        if (destination == null) {
+            destination = uris.createNewColonies();
+        }
+        if (!destination.canWrite()) {
+            throw new IllegalStateException("Can't write to " + destination.getUri());
+        }
 
         final NewColony[] colonies = params[0].getColonies();
-        try (OutputStream out = context.getContentResolver().openOutputStream(destination)) {
-            final PrintStream stream = new PrintStream(out);
+        try (PrintStream stream = new PrintStream(Objects.requireNonNull(context.getContentResolver().openOutputStream(destination.getUri())))) {
             stream.println("Name,X,Y,Notes");
             for (NewColony colony : colonies) {
                 // Replace line breaks with spaces
@@ -82,19 +86,19 @@ public class NewColonyWriteTask extends AsyncTask<Params, Void, Void> {
 
     public static class Params {
         private final NewColony[] colonies;
-        private final Uri destination;
+        private final Storage.FileUris uris;
 
-        public Params(NewColony[] colonies, Uri destination) {
+        public Params(NewColony[] colonies, Storage.FileUris uris) {
             this.colonies = colonies;
-            this.destination = destination;
+            this.uris = uris;
         }
 
         public NewColony[] getColonies() {
             return colonies;
         }
 
-        public Uri getDestination() {
-            return destination;
+        public Storage.FileUris getUris() {
+            return uris;
         }
     }
 

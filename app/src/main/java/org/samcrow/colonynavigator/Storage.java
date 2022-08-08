@@ -3,8 +3,11 @@ package org.samcrow.colonynavigator;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.support.v4.provider.DocumentFile;
+import android.util.Log;
 
 import org.apache.commons.io.IOUtils;
 
@@ -43,55 +46,41 @@ public class Storage {
         return new File(ctx.getCacheDir().getAbsolutePath(), resid + ".resource");
     }
 
-    /**
-     * Tries to find the location of the SD card on the file system. If no known directories
-     * are available, returns some other external storage directory.
-     *
-     * @return a directory for storage, which may be a memory card
-     */
-    public static File getMemoryCard() {
-        File dir = new File("/mnt/extSdCard");
-        if (dir.exists() && dir.isDirectory()) {
-            return dir;
+    public static FileUris getMemoryCardUris(Context ctx, @Nullable Uri chosenUri) {
+        if (chosenUri != null) {
+            final FileUris chosen = new FileUris(DocumentFile.fromTreeUri(ctx, chosenUri));
+            if (chosen.getCsv() != null || chosen.getJson() != null) {
+                return chosen;
+            } else {
+                return searchMemoryCardUris(ctx);
+            }
+        } else {
+            return searchMemoryCardUris(ctx);
         }
-        dir = new File("/Removable/MicroSD");
-        if (dir.exists() && dir.isDirectory()) {
-            return dir;
-        }
-        dir = new File("/storage/extSdCard");
-        if (dir.exists() && dir.isDirectory()) {
-            return dir;
-        }
-        dir = new File("/storage/6133-3731");
-        if (dir.exists() && dir.isDirectory()) {
-            return dir;
-        }
-        dir = new File("/storage/1C45-180D");
-        if (dir.exists() && dir.isDirectory()) {
-            return dir;
-        }
-        dir = new File("/storage/22C1-11F5");
-        if (dir.exists() && dir.isDirectory()) {
-            return dir;
-        }
-        return Environment.getExternalStorageDirectory();
     }
 
-    public static FileUris getMemoryCardUris(Context ctx) {
+    public static FileUris searchMemoryCardUris(Context ctx) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             final String[] storageNames = {
                     "extSdCard",
                     "6133-3731",
                     "1C45-180D",
-                    "22C1-11F5"
+                    "22C1-11F5",
+                    "3466-3339"
             };
+            final UriBuilder[] builders = {
+                    new Tab27UriBuilder(),
+                    new TabActiveUriBuilder(),
+            };
+
             for (String storageName : storageNames) {
-                final Uri csvUri = makeStorageUri(storageName, "colonies.csv");
-                final Uri jsonUri = makeStorageUri(storageName, "colonies.json");
-                final Uri focusColoniesUri = makeStorageUri(storageName, "focus_colonies.txt");
-                final Uri newColoniesUri = makeStorageUri(storageName, "new_colonies.csv");
-                if (fileExistsAtUri(ctx, csvUri) || fileExistsAtUri(ctx, jsonUri)) {
-                    return new FileUris(csvUri, jsonUri, focusColoniesUri, newColoniesUri);
+                for (UriBuilder builder : builders) {
+                    final Uri storageUri = builder.makeUri(storageName);
+                    final FileUris uris = new FileUris(DocumentFile.fromTreeUri(ctx, storageUri));
+                    // The storage location is valid if either CSV or JSON file exists
+                    if (uris.getCsv() != null || uris.getJson() != null) {
+                        return uris;
+                    }
                 }
             }
             return null;
@@ -100,11 +89,25 @@ public class Storage {
         }
     }
 
-    private static Uri makeStorageUri(String storageName, String fileName) {
-        return Uri.parse(String.format("content://com.android.externalstorage.documents/tree/%s%%3A/document/%s%%3A%s", storageName, storageName, fileName));
+
+    private interface UriBuilder {
+        Uri makeUri(String storageName);
+    }
+    private static class Tab27UriBuilder implements UriBuilder {
+        @Override
+        public Uri makeUri(String storageName) {
+            return Uri.parse(String.format("content://com.android.externalstorage.documents/tree/%s%%3A/document/%s%%3A", storageName, storageName));
+        }
+    }
+    private static class TabActiveUriBuilder implements UriBuilder {
+        @Override
+        public Uri makeUri(String storageName) {
+            return Uri.parse(String.format("content://com.android.externalstorage.documents/document/%s%%3A", storageName));
+        }
     }
 
     private static boolean fileExistsAtUri(Context ctx, Uri uri) {
+        Log.i("Storage", "Checking for file at " + uri);
         final DocumentFile document = DocumentFile.fromSingleUri(ctx, uri);
         if (document != null) {
             return document.exists() && document.isFile();
@@ -114,41 +117,53 @@ public class Storage {
     }
 
     public static class FileUris {
-        private final Uri mCsv;
-        private final Uri mJson;
-        private final Uri mFocusColonies;
-        private final Uri mNewColonies;
 
-        public FileUris(Uri csv, Uri json, Uri focusColonies, Uri newColonies) {
-            mCsv = csv;
-            mJson = json;
-            mFocusColonies = focusColonies;
-            mNewColonies = newColonies;
+        private static final String CSV_NAME = "colonies.csv";
+        private static final String JSON_NAME = "colonies.json";
+        private static final String FOCUS_NAME = "focus_colonies.txt";
+        private static final String NEW_COLONIES_NAME = "new_colonies.csv";
+
+        private static final String CSV_MIME = "text/csv";
+        private static final String TEXT_MIME = "text/plain";
+        private static final String JSON_MIME = "application/json";
+
+        /**
+         * The directory containing the four files
+         */
+        private final DocumentFile mFolder;
+
+        public FileUris(DocumentFile folder) {
+            mFolder = folder;
         }
 
-        public Uri getCsv() {
-            return mCsv;
+        public DocumentFile getCsv() {
+            return mFolder.findFile(CSV_NAME);
         }
 
-        public Uri getJson() {
-            return mJson;
+        public DocumentFile getJson() {
+            return mFolder.findFile(JSON_NAME);
         }
 
-        public Uri getFocusColonies() {
-            return mFocusColonies;
+        public DocumentFile createJson() {
+            return mFolder.createFile(JSON_MIME, JSON_NAME);
         }
 
-        public Uri getNewColonies() {
-            return mNewColonies;
+        public DocumentFile getFocusColonies() {
+            return mFolder.findFile(FOCUS_NAME);
+        }
+
+        public DocumentFile getNewColonies() {
+            return mFolder.findFile(NEW_COLONIES_NAME);
+        }
+
+        public DocumentFile createNewColonies() {
+            return mFolder.createFile(CSV_MIME, NEW_COLONIES_NAME);
         }
 
         @Override
         public String toString() {
             return "FileUris{" +
-                    "csv=" + mCsv +
-                    ", json=" + mJson +
-                    ", focusColonies=" + mFocusColonies +
-                    ", newColonies=" + mNewColonies +
+                    "mFolder = " + mFolder +
                     '}';
         }
     }

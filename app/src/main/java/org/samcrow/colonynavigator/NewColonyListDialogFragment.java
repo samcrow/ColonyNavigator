@@ -3,8 +3,12 @@ package org.samcrow.colonynavigator;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.SharedPreferences;
 import android.database.DataSetObserver;
+import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.util.TypedValue;
@@ -26,6 +30,7 @@ import org.samcrow.colonynavigator.data4.NewColonyWriteTask.Params;
 public class NewColonyListDialogFragment extends AppCompatDialogFragment {
 
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
@@ -43,16 +48,21 @@ public class NewColonyListDialogFragment extends AppCompatDialogFragment {
         final NewColony[] colonies = (NewColony[]) args.getParcelableArray("colonies");
         list.setAdapter(new NewColonyAdapter(colonies));
 
+        // Get card URI from preferences
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        final String chosenCardUriString = preferences.getString("card_uri", null);
+        final Uri chosenCardUri = chosenCardUriString != null ? Uri.parse(chosenCardUriString) : null;
+
         // Set up buttons
 
         final Button exportButton = (Button) view.findViewById(R.id.save_new_colonies_button);
         exportButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                final Storage.FileUris uris = Storage.getMemoryCardUris(view.getContext());
+                final Storage.FileUris uris = Storage.getMemoryCardUris(view.getContext(), chosenCardUri);
                 assert uris != null;
                 final NewColonyWriteTask task = new NewColonyWriteTask(view.getContext());
-                task.execute(new Params(colonies, uris.getNewColonies()));
+                task.execute(new Params(colonies, uris));
             }
         });
 
@@ -108,7 +118,7 @@ public class NewColonyListDialogFragment extends AppCompatDialogFragment {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             final NewColony colony = colonies[position];
-            if (convertView != null && convertView instanceof EditText) {
+            if (convertView instanceof EditText) {
                 ((TextView) convertView).setText(colony.toString());
                 return convertView;
             } else {

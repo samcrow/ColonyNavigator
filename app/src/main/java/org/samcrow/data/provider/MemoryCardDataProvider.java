@@ -29,11 +29,7 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Provides colonies from data stored on the memory card.
- * This class first looks for a CSV file named colonies.csv in the directory specified by {@link #cardPath}.
- * It parses that data.
- * Then it looks for a JSON file named colonies.json in the same directory and parses that data.
- * In the event of any conflict between the two files, the version in colonies.json takes precedence.
- * <p/>
+ *
  * When writing colony data, this implementation writes it to colonies.json. It does not modify colonies.csv.
  *
  * @author Sam Crow
@@ -48,35 +44,36 @@ public class MemoryCardDataProvider implements ColonyProvider {
         this.context = context;
         mUris = uris;
 
-        final DocumentFile csvFile = DocumentFile.fromSingleUri(context, uris.getCsv());
-        final DocumentFile jsonFile = DocumentFile.fromSingleUri(context, uris.getJson());
+        final DocumentFile csvFile =  uris.getCsv();
+        DocumentFile jsonFile = uris.getJson();
 
         //Case 1: Application hasn't been run before
         //colonies.csv exists, colonies.json does not
-        if (csvFile.exists() && !jsonFile.exists()) {
+        if (csvFile != null && jsonFile == null) {
 
             //Read the CSV and get the colonies into memory
-            try (InputStream csvStream = context.getContentResolver().openInputStream(uris.getCsv())) {
+            try (InputStream csvStream = context.getContentResolver().openInputStream(csvFile.getUri())) {
                 colonies = CSVFileParser.parseFromStream(csvStream);
             }
 
             //Write the JSON file from memory
-            try (OutputStream jsonStream = context.getContentResolver().openOutputStream(uris.getJson())) {
+            jsonFile = mUris.createJson();
+            try (OutputStream jsonStream = context.getContentResolver().openOutputStream(jsonFile.getUri())) {
                 JSONFileParser.writeToStream(jsonStream, colonies);
             }
         }
 
         //Case 2: both files exist
-        else if (csvFile.exists() && jsonFile.exists()) {
+        else if (csvFile != null && jsonFile != null) {
 
 
             // Read both CSV and JSON files
             ColonySet csvColonies;
-            try (InputStream csvStream = context.getContentResolver().openInputStream(uris.getCsv())) {
+            try (InputStream csvStream = context.getContentResolver().openInputStream(csvFile.getUri())) {
                 csvColonies = CSVFileParser.parseFromStream(csvStream);
             }
             ColonySet jsonColonies;
-            try (InputStream jsonStream = context.getContentResolver().openInputStream(uris.getJson())) {
+            try (InputStream jsonStream = context.getContentResolver().openInputStream(jsonFile.getUri())) {
                 jsonColonies = JSONFileParser.parseFromStream(jsonStream);
             }
 
@@ -84,15 +81,15 @@ public class MemoryCardDataProvider implements ColonyProvider {
             colonies = extend(csvColonies, jsonColonies);
 
             //Write the JSON file from memory
-            try (OutputStream jsonStream = context.getContentResolver().openOutputStream(uris.getJson())) {
+            try (OutputStream jsonStream = context.getContentResolver().openOutputStream(jsonFile.getUri())) {
                 JSONFileParser.writeToStream(jsonStream, colonies);
             }
         }
 
         //Cases 3: CSV doesn't exist, JSON does
-        else if (!csvFile.exists() && jsonFile.exists()) {
+        else if (csvFile == null && jsonFile != null) {
             //Use the JSON file
-            try (InputStream jsonStream = context.getContentResolver().openInputStream(uris.getJson())) {
+            try (InputStream jsonStream = context.getContentResolver().openInputStream(jsonFile.getUri())) {
                 colonies = JSONFileParser.parseFromStream(jsonStream);
             }
         } else {
@@ -101,9 +98,9 @@ public class MemoryCardDataProvider implements ColonyProvider {
 
 
         //Look for focus_colonies.txt
-        final DocumentFile focusColoniesDocument = DocumentFile.fromSingleUri(context, uris.getFocusColonies());
-        if (focusColoniesDocument.exists() && focusColoniesDocument.canRead()) {
-            try (final InputStream in = context.getContentResolver().openInputStream(uris.getFocusColonies())) {
+        final DocumentFile focusColoniesDocument = uris.getFocusColonies();
+        if (focusColoniesDocument != null) {
+            try (final InputStream in = context.getContentResolver().openInputStream(focusColoniesDocument.getUri())) {
                 new FocusColonyFinder(in, colonies).updateColonies();
             } catch (IOException e) {
                 Log.e("MemoryCardDataProvider", "Can't read focus colonies file", e);
@@ -210,7 +207,12 @@ public class MemoryCardDataProvider implements ColonyProvider {
                 throw new IllegalStateException("No permission to write external storage");
             }
 
-            try (OutputStream jsonStream = context.getContentResolver().openOutputStream(mUris.getJson())) {
+            DocumentFile jsonFile = mUris.getJson();
+            if (jsonFile == null) {
+                jsonFile = mUris.createJson();
+            }
+
+            try (OutputStream jsonStream = context.getContentResolver().openOutputStream(jsonFile.getUri())) {
                 JSONFileParser.writeToStream(jsonStream, colonies);
             } catch (IOException e) {
                 throw new RuntimeException(e);
