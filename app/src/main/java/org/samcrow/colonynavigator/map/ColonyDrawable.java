@@ -68,7 +68,7 @@ public class ColonyDrawable extends Drawable {
     /**
      * The horizontal distance from the center that the colony number text is offset
      */
-    private static final int TEXT_X_OFFSET = 5;
+    private static final int TEXT_X_OFFSET = 10;
 
     private final Paint paint;
     private final Colony colony;

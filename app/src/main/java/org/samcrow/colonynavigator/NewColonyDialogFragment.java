@@ -39,12 +39,6 @@ public class NewColonyDialogFragment extends AppCompatDialogFragment {
                             "Please enter a name for this colony");
                     return;
                 }
-                if (notes.isEmpty()) {
-                    showErrorDialog(view.getContext(), "No notes entered",
-                            "Please enter a location, and any other relevant information, for this colony");
-                    return;
-                }
-
 
                 if (getActivity() instanceof NewColonyListener) {
                     ((NewColonyListener) getActivity()).createColony(name, notes);
