@@ -11,28 +11,28 @@ import android.database.SQLException;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.location.LocationListener;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.provider.DocumentsContract;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.provider.DocumentFile;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AlertDialog.Builder;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.widget.FrameLayout;
-import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog.Builder;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.documentfile.provider.DocumentFile;
 
 import com.applantation.android.svg.SVG;
 import com.applantation.android.svg.SVGParseException;
@@ -47,7 +47,7 @@ import org.mapsforge.map.android.view.MapView;
 import org.mapsforge.map.layer.LayerManager;
 import org.mapsforge.map.layer.cache.TileCache;
 import org.mapsforge.map.layer.renderer.TileRendererLayer;
-import org.mapsforge.map.model.MapViewPosition;
+import org.mapsforge.map.model.IMapViewPosition;
 import org.mapsforge.map.model.Model;
 import org.mapsforge.map.model.common.PreferencesFacade;
 import org.mapsforge.map.reader.MapFile;
@@ -68,7 +68,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * The main activity
@@ -226,6 +225,7 @@ public class MainActivity extends AppCompatActivity implements
             } else {
                 // Check if we have permission to access the URI
                 final DocumentFile cardFile = DocumentFile.fromTreeUri(this, cardUri);
+                assert cardFile != null;
                 Log.i(TAG, "Card URI " + cardUri + ": exists " + cardFile.exists() + " canRead " + cardFile.canRead() + " canWrite " + cardFile.canWrite() + " files " + Arrays.toString(cardFile.listFiles()));
                 if (cardFile.exists() && cardFile.canRead() && cardFile.canWrite()) {
                     // Already have permission, don't need to ask
@@ -241,6 +241,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void openCardFolder(@Nullable final Uri initialUri) {
         new Builder(this).setTitle(R.string.memory_card_access)
                 .setMessage(R.string.choose_memory_card)
@@ -248,8 +249,9 @@ public class MainActivity extends AppCompatActivity implements
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         final Intent cardIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                        // Using initialUri requires DocumentsContract.EXTRA_INITIAL_URI
-                        // , added in API level 26
+                        if (initialUri != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            cardIntent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialUri);
+                        }
                         startActivityForResult(cardIntent, CARD_TREE_REQUEST);
                     }
                 })
@@ -261,32 +263,45 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == CARD_TREE_REQUEST && resultCode == RESULT_OK && data != null) {
-            final Uri cardUri = data.getData();
-            if (cardUri != null) {
-                Log.i(TAG, "Opened memory card " + cardUri);
-                final DocumentFile cardFile = DocumentFile.fromTreeUri(this, cardUri);
-                Log.i(TAG, "Opened card URI " + cardUri + ": exists " + cardFile.exists() + " canRead " + cardFile.canRead() + " canWrite " + cardFile.canWrite() + " files " + Arrays.toString(cardFile.listFiles()));
-                try {
-                    final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-                    preferences.edit().putString("card_uri", cardUri.toString()).apply();
+        if (requestCode == CARD_TREE_REQUEST) {
+            if (resultCode == RESULT_OK && data != null) {
+                final Uri cardUri = data.getData();
+                if (cardUri != null) {
+                    Log.i(TAG, "Opened memory card " + cardUri);
 
-                    postCardPermissionSetup(cardUri);
-                } catch (Exception ex) {
-                    // Show a dialog, then quit
-                    Log.e(TAG, "Exception", ex);
-                    new AlertDialog.Builder(MainActivity.this)
-                            .setTitle(ex.getClass().getSimpleName())
-                            .setMessage(ex.getMessage())
-                            .setNeutralButton("Quit", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // Close this activity
-                                    MainActivity.this.finish();
-                                }
-                            })
-                            .show();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                        // Got permission to access this directory
+                        // Make it persistent if possible
+                        if ((data.getFlags() & Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION) != 0) {
+                            Log.i(TAG, "Requesting persistent permission to access card");
+                            getContentResolver().takePersistableUriPermission(cardUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        }
+                    }
+
+                    try {
+                        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+                        preferences.edit().putString("card_uri", cardUri.toString()).apply();
+
+                        postCardPermissionSetup(cardUri);
+                    } catch (Exception ex) {
+                        // Show a dialog, then quit
+                        Log.e(TAG, "Exception", ex);
+                        new Builder(MainActivity.this)
+                                .setTitle(ex.getClass().getSimpleName())
+                                .setMessage(ex.getMessage())
+                                .setNeutralButton("Quit", new OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        // Close this activity
+                                        MainActivity.this.finish();
+                                    }
+                                })
+                                .show();
+                    }
                 }
+            } else {
+                // Folder selection not complete or no folder chosen
+                finish();
             }
         }
     }
@@ -329,7 +344,7 @@ public class MainActivity extends AppCompatActivity implements
 
 
         // Put the map view in the layout
-        FrameLayout layout = (FrameLayout) findViewById(R.id.map_view_frame);
+        FrameLayout layout = findViewById(R.id.map_view_frame);
         layout.addView(mapView);
 
         // Create a tile cache
@@ -377,7 +392,7 @@ public class MainActivity extends AppCompatActivity implements
         // locationOverlay.enableMyLocation() gets called in onResume().
     }
 
-    private MapViewPosition initializePosition(MapViewPosition mvp) {
+    private IMapViewPosition initializePosition(IMapViewPosition mvp) {
         LatLong center = mvp.getCenter();
 
         if (center.equals(new LatLong(0, 0))) {
@@ -408,7 +423,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private TileRendererLayer createTileRendererLayer(
-            TileCache tileCache, MapViewPosition mapViewPosition,
+            TileCache tileCache, IMapViewPosition mapViewPosition,
             XmlRenderTheme renderTheme) throws IOException {
         TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache,
                 new MapFile(Storage.getResourceAsFile(this, R.raw.site)), mapViewPosition,

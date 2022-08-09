@@ -7,6 +7,7 @@ import android.location.LocationListener;
 import org.mapsforge.core.graphics.Bitmap;
 import org.mapsforge.core.graphics.Paint;
 import org.mapsforge.map.android.layer.MyLocationOverlay;
+import org.mapsforge.map.model.IMapViewPosition;
 import org.mapsforge.map.model.MapViewPosition;
 
 import java.util.ArrayList;
@@ -23,14 +24,14 @@ public class NotifyingMyLocationOverlay extends MyLocationOverlay {
     private List<LocationListener> listeners = new ArrayList<>();
 
     public NotifyingMyLocationOverlay(Context context,
-                                      MapViewPosition mapViewPosition, Bitmap bitmap,
+                                      IMapViewPosition mapViewPosition, Bitmap bitmap,
                                       Paint circleFill,
                                       Paint circleStroke) {
         super(context, mapViewPosition, bitmap, circleFill, circleStroke);
     }
 
     public NotifyingMyLocationOverlay(Context context,
-                                      MapViewPosition mapViewPosition, Bitmap bitmap) {
+                                      IMapViewPosition mapViewPosition, Bitmap bitmap) {
         super(context, mapViewPosition, bitmap);
     }
 

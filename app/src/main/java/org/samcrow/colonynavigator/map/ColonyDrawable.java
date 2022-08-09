@@ -10,6 +10,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import androidx.annotation.NonNull;
 
 import org.samcrow.colonynavigator.data4.Colony;
 
@@ -127,7 +128,7 @@ public class ColonyDrawable extends Drawable {
     }
 
     @Override
-    public void draw(Canvas canvas) {
+    public void draw(@NonNull Canvas canvas) {
 
         //Paint within bounds
         //Calculate the X/Y canvas coordinate position of the actual colony position

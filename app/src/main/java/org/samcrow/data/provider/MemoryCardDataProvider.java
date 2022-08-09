@@ -7,8 +7,8 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.provider.DocumentFile;
+import androidx.core.content.ContextCompat;
+import androidx.documentfile.provider.DocumentFile;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -17,11 +17,9 @@ import org.samcrow.colonynavigator.Storage;
 import org.samcrow.colonynavigator.data4.Colony;
 import org.samcrow.colonynavigator.data4.ColonySet;
 import org.samcrow.data.io.CSVFileParser;
-import org.samcrow.data.io.FileParser;
 import org.samcrow.data.io.FocusColonyFinder;
 import org.samcrow.data.io.JSONFileParser;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
