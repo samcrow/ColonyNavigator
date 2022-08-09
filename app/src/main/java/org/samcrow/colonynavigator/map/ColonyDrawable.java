@@ -35,7 +35,12 @@ public class ColonyDrawable extends Drawable {
     /**
      * Background circle radius
      */
-    private static final int BG_RADIUS = 20;
+    private static final int BG_RADIUS = 40;
+
+    /**
+     * Text size (height?) in pixels
+     */
+    private static final float LABEL_TEXT_SIZE = 30;
 
     /**
      * Colony location point color
@@ -48,7 +53,7 @@ public class ColonyDrawable extends Drawable {
     /**
      * Colony location circle radius
      */
-    private static final int POINT_RADIUS = 3;
+    private static final int POINT_RADIUS = 6;
     /**
      * Line color for the circle drawn around the selected colony
      */
@@ -56,7 +61,7 @@ public class ColonyDrawable extends Drawable {
     /**
      * Line width for the circle drawn around the selected colony
      */
-    private static final int SELECTED_CIRCLE_LINE_WIDTH = 5;
+    private static final int SELECTED_CIRCLE_LINE_WIDTH = 12;
 
     private static final float SELECTED_CIRCLE_RADIUS = BG_RADIUS - (SELECTED_CIRCLE_LINE_WIDTH / 2f);
 
@@ -65,13 +70,17 @@ public class ColonyDrawable extends Drawable {
      */
     private static final int TEXT_X_OFFSET = 5;
 
-    private final Paint paint = new Paint();
+    private final Paint paint;
     private final Colony colony;
     private final int idStringWidth;
-    private FontMetrics metrics = new FontMetrics();
+    private final FontMetrics metrics;
     private boolean colonySelected;
 
     public ColonyDrawable(Colony colony) {
+        this.paint = new Paint();
+        // Make text larger
+        this.paint.setTextSize(LABEL_TEXT_SIZE);
+
         this.colony = colony;
         String colonyIdString = colony.getID();
         idStringWidth = (int) Math.ceil(paint.measureText(colonyIdString));
