@@ -1,6 +1,5 @@
 package org.samcrow.colonynavigator;
 
-import android.graphics.Matrix;
 import android.graphics.PointF;
 
 import org.mapsforge.core.model.LatLong;
@@ -8,32 +7,23 @@ import org.mapsforge.core.model.LatLong;
 /**
  * Transforms coordinates from GPS latitude/longitude into local colony
  * coordinates
+ * <p>
+ * This uses a 6-parameter model with values calculated separately.
  *
  * @author Sam Crow
  */
 public class CoordinateTransformer {
-
-    private static final String TAG = CoordinateTransformer.class.getName();
     private static CoordinateTransformer instance;
-    private Matrix matrix = new Matrix();
-    private Matrix inverse = new Matrix();
+
+    // Hard-coded values calculated separately
+    // These use X for latitude and Y for longitude
+    private final SixParameterTransform gpsToColony = new SixParameterTransform(35380813.397795536, -66056.10712056136, 305159.705957632, -5185834.815475205, 358739.976344031, 57293.81311218767);
+    private final SixParameterTransform colonyToGps = new SixParameterTransform(31.870795376913772, -5.05871722366544e-7, 2.6943863161521207e-6, -109.04307506765184, 3.1674695723172968e-6, 5.832377854913447e-7);
 
     /**
      * Constructor
      */
     private CoordinateTransformer() {
-
-        // Hard-coded values provided by Erik Steiner
-        inverse.setValues(new float[]{
-                0.0000031740000f, 0.0000006358000f, -109.043098200f,
-                -0.0000005184000f, 0.0000027130000f, 31.870789500f,
-                0.0f, 0.0f, 1.0f
-        });
-        matrix.setValues(new float[]{
-                303445, -71113.3f, 3.5355E7f,
-                57982.3f, 355007, -4.99179E6f,
-                0.0f, 0.0f, 1.0f
-        });
     }
 
     public static CoordinateTransformer getInstance() {
@@ -48,18 +38,17 @@ public class CoordinateTransformer {
     /**
      * Transform given GPS coordinates into local coordinates.
      *
-     * @param longitude The longitude (X-axis location)
-     * @param latitude  The latitude (Y-axis location);
+     * @param longitude The longitude
+     * @param latitude  The latitude
      * @return A point with the transformed coordinates
      */
     public PointF toLocal(double longitude, double latitude) {
-        double x = longitude;
-        double y = latitude;
-        float[] points = new float[]{(float) x, (float) y};
+        double[] gpsPoint = new double[]{latitude, longitude};
+        double[] localPoint = new double[2];
 
-        matrix.mapPoints(points);
+        gpsToColony.transform(gpsPoint, localPoint);
 
-        return new PointF(points[0], points[1]);
+        return new PointF((float) localPoint[0], (float) localPoint[1]);
     }
 
     /**
@@ -71,12 +60,12 @@ public class CoordinateTransformer {
      * y
      */
     public LatLong toGps(float x, float y) {
+        double[] localPoint = new double[]{x, y};
+        double[] gpsPoint = new double[2];
 
-        float[] points = new float[]{x, y};
+        colonyToGps.transform(localPoint, gpsPoint);
 
-        inverse.mapPoints(points);
-
-        return new LatLong(points[1], points[0]);
+        return new LatLong(gpsPoint[0], gpsPoint[1]);
 
     }
 }
