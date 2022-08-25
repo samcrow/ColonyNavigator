@@ -11,6 +11,7 @@ import android.database.SQLException;
 import android.graphics.PointF;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.location.LocationListener;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -68,6 +70,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * The main activity
@@ -390,6 +393,15 @@ public class MainActivity extends AppCompatActivity implements
                 AndroidGraphicFactory.convertToBitmap(getMyLocationDrawable()));
         layerManager.getLayers().add(locationOverlay);
         // locationOverlay.enableMyLocation() gets called in onResume().
+
+        final TextView coordinatesView = findViewById(R.id.current_coordinates);
+        locationOverlay.addLocationListener(new LocationListener() {
+            @Override
+            public void onLocationChanged(@NonNull Location location) {
+                final PointF coordinates = CoordinateTransformer.getInstance().toLocal(location.getLongitude(), location.getLatitude());
+                coordinatesView.setText(String.format(Locale.getDefault(), "(%.0f, %.0f)", coordinates.x, coordinates.y));
+            }
+        });
     }
 
     private IMapViewPosition initializePosition(IMapViewPosition mvp) {
